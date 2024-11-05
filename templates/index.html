@@ -1,56 +1,97 @@
 {% extends 'layout/base.html' %}
 
-
-
 {% block content %}
-    	<div class="table-responsive">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Firstname</th>
-              <th>Lastname</th>
-              <th>Age</th>
-              <th>City</th>
-              <th>Country</th>
-              <th>Sex</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-              <th>Example</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Anna</td>
-              <td>Pitt</td>
-              <td>35</td>
-              <td>New York</td>
-              <td>USA</td>
-              <td>Female</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-              <td>Yes</td>
-            </tr>
-          </tbody>
-        </table>
+    <form id="studentForm" method="POST" action="{{ url_for('submit') }}">
+      <div class="table-responsive">
+          <table class="table table-bordered">
+              <thead>
+                  <tr>
+                      <th colspan="2" style="text-align: center;">HỒ SƠ HỌC SINH</th> <!-- Thêm thẻ <tr> để tiêu đề nằm trong bảng -->
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td>Họ tên:
+                        <input type="text" name="ho_ten" placeholder=".........." style="border: none; outline: none; background-color: transparent;" />
+                      </td>
+                      <td>Giới tính:
+                        <input type="text" name="gioi_tinh" placeholder=".........." style="border: none; outline: none; background-color: transparent;" />
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>Ngày Sinh:
+                        <input type="text" name="ngay_sinh" placeholder="DD-MM-YYYY" 
+                        style="border: none; outline: none; background-color: transparent;" 
+                        />                      
+                      </td>
+                      <td>Địa chỉ:
+                        <input type="text" name="dia_chi" placeholder=".........." style="border: none; outline: none; background-color: transparent;" />
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>Số điện thoại:
+                        <input type="text" name="so_dien_thoai" placeholder=".........." style="border: none; outline: none; background-color: transparent;" />
+                      </td>
+                      <td>Email:
+                        <input type="text" name="email" placeholder=".........." style="border: none; outline: none; background-color: transparent;" />
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+          <button type="submit">Thêm sinh viên</button>
       </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function() {
+          $('#studentForm').on('submit', function(event) {
+              event.preventDefault(); // Ngăn chặn hành động mặc định của form
+      
+              $.ajax({
+                  type: 'POST',
+                  url: "{{ url_for('submit') }}", // Đường dẫn đến hàm submit
+                  data: $(this).serialize(), // Lấy dữ liệu từ form
+                  success: function(response) {
+                      alert('Thêm học sinh thành công!'); // Hiển thị thông báo thành công
+                      location.reload(); // Reload lại trang
+                  },
+                  error: function(xhr, status, error) {
+                      alert('Có lỗi xảy ra: ' + xhr.responseText); // Hiển thị thông báo lỗi nếu có
+                  }
+              });
+          });
+      });
+      // document.querySelector('input[name="ngay_sinh"]').addEventListener('input', function() {
+      //     const regex = /^\d{2}-\d{2}-\d{4}$/;
+
+      //     // Chỉ kiểm tra nếu độ dài của chuỗi đạt đủ 10 ký tự (DD-MM-YYYY)
+      //     if (this.value.length === 10) {
+      //         if (!regex.test(this.value)) {
+      //             this.setCustomValidity('Vui lòng nhập ngày sinh theo định dạng DD-MM-YYYY');
+      //         } else {
+      //             this.setCustomValidity('');
+      //         }
+      //     } else {
+      //         // Khi chuỗi chưa đủ độ dài, không hiển thị thông báo lỗi
+      //         this.setCustomValidity('');
+      //     }
+      // });
+      document.querySelector('input[name="ngay_sinh"]').addEventListener('input', function(e) {
+        let value = this.value.replace(/[^0-9/]/g, ''); // Xóa ký tự không hợp lệ
+        
+        // Kiểm tra nếu không phải thao tác xóa (người dùng nhập thêm)
+        if (e.inputType !== 'deleteContentBackward') {
+          if (value.length === 2 || value.length === 5) {
+            // Chỉ thêm dấu '/' nếu không có tại vị trí đó
+            if (value[value.length - 1] !== '/') {
+              value += '/';
+            }
+          }
+        }
+
+        // Cập nhật giá trị ô nhập
+        this.value = value.slice(0, 10); // Giới hạn tối đa 10 ký tự
+        
+      });
+      </script>      
 {% endblock %}

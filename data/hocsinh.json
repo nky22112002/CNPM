@@ -1,0 +1,65 @@
+[
+    {
+        "MaHS": 1,
+        "FullName": "Nguyễn Văn A",
+        "NgaySinh": "22/11/2003",
+        "SDT": "0322175421",
+        "GioiTinh": "Nam",
+        "DiaChi": "Long Khánh",
+        "Email": "nsau@gmail.com"
+    },
+    {
+        "MaHS": 2,
+        "FullName": "Nguyễn Thị B",
+        "NgaySinh": "23/12/2003",
+        "SDT": "0239841491",
+        "GioiTinh": "Nữ",
+        "DiaChi": "Xuân Lộc",
+        "Email": "fdsfs@gmail.com"
+    },
+    {
+        "MaHS": 3,
+        "FullName": "Nguyễn Thị C",
+        "NgaySinh": "23/12/2004",
+        "SDT": "0239841421",
+        "GioiTinh": "Nữ",
+        "DiaChi": "Xuân Lộc",
+        "Email": "fdsfs@gmail.com"
+    },
+    {
+        "MaHS": 4,
+        "FullName": "Nguyễn Văn D",
+        "NgaySinh": "12/2/2002",
+        "SDT": "0329412342",
+        "GioiTinh": "Nam",
+        "DiaChi": "Xuân Thanh",
+        "Email": "fweofi@gmail.com"
+    },
+    {
+        "MaHS": 5,
+        "FullName": "Nguyễn Văn E",
+        "NgaySinh": "12/2/2004",
+        "SDT": "0329412323",
+        "GioiTinh": "Nam",
+        "DiaChi": "Xuân Bình",
+        "Email": "fwrgeacaofi@gmail.com"
+    },
+    {
+        "MaHS": 6,
+        "FullName": "Nguyễn Văn F",
+        "NgaySinh": "31/12/2003",
+        "SDT": "0239324532",
+        "GioiTinh": "Nam",
+        "DiaChi": "Xuân Trung",
+        "Email": "foweifq@gmail.com"
+    },
+    {
+        "MaHS": 7,
+        "FullName": "Nguyễn Thị G",
+        "NgaySinh": "2004-11-22",
+        "SDT": "01283198192",
+        "GioiTinh": "Nữ",
+        "DiaChi": "Xuân Lộc",
+        "Email": "foqeifoq@gmail.com"
+    }
+]
