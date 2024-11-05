@@ -61,5 +61,23 @@
         "GioiTinh": "Nữ",
         "DiaChi": "Xuân Lộc",
         "Email": "foqeifoq@gmail.com"
+    },
+    {
+        "MaHS": 8,
+        "FullName": "Nguyễn Thị H",
+        "NgaySinh": "2004-02-29",
+        "SDT": "0239841421",
+        "GioiTinh": "Nữ",
+        "DiaChi": "Xuân Lộc",
+        "Email": "fwoefiowawd@gmail.com"
+    },
+    {
+        "MaHS": 9,
+        "FullName": "Cao Thiên Bảo",
+        "NgaySinh": "2006-05-19",
+        "SDT": "0826675756",
+        "GioiTinh": "Nam",
+        "DiaChi": "abc",
+        "Email": "thienbaopro2004@gmail.com"
     }
 ]
