@@ -73,11 +73,20 @@
     },
     {
         "MaHS": 9,
+<<<<<<< HEAD
         "FullName": "Nguyễn Thị J",
         "NgaySinh": "2005-11-22",
         "SDT": "0284192847",
         "GioiTinh": "Nữ",
         "DiaChi": "Xuân Lộc",
         "Email": "FOWEIFJOQ@gmail.com"
+=======
+        "FullName": "Cao Thiên Bảo",
+        "NgaySinh": "2006-05-19",
+        "SDT": "0826675756",
+        "GioiTinh": "Nam",
+        "DiaChi": "abc",
+        "Email": "thienbaopro2004@gmail.com"
+>>>>>>> 17f9d33920db27adb95e3666c766a7c1f280bdf6
     }
 ]
