@@ -1,0 +1,78 @@
+{% extends 'layout/base_point.html' %}
+
+{% block content %}
+    <form id="pointForm" method="POST1" action="/save_point">
+      <div class="table-responsive">
+        <table class="table table-bordered"  id="studentClass" style="width: 100%;">
+            <thead>
+                <!-- Hàng đầu tiên với một ô chiếm toàn bộ chiều rộng -->
+                <tr>
+                    <th colspan="5" style="text-align: center; width: 100%;">Bảng điểm môn học</th>
+                </tr>
+                <!-- Hàng thứ hai với hai ô chia 50% mỗi ô -->
+                <tr>
+                    <td colspan="3" style="width: 50%;">Lớp:
+                        <input type="text" name="lop" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                    </td>
+                    
+                    <td colspan="2" style="width: 50%;">Môn:
+                        <input type="text" name="mon" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" style="width: 50%;">Học kỳ:
+                        <input type="text" name="hocky" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 60%;" />
+                    </td>
+                    
+                    <td colspan="2" style="width: 50%;">Năm học:
+                        <input type="text" name="namhoc" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 60%;" />
+                    </td>
+                </tr>
+
+            </thead>
+            <tbody>
+                <!-- Hàng nội dung với các cột chi tiết -->
+                <tr style="text-align: center;">
+                    <td style="width: 5%;">STT</td>
+                    <td style="width: 30%;">Họ tên</td>
+                    <td style="width: 15%;">Điểm 15'</td>
+                    <td style="width: 20%;">Điểm 1 tiết</td>
+                    <td style="width: 30%;">Điểm thi</td>
+                </tr>
+                <tr style="text-align: center;">
+                    <td style="width: 5%;">1</td>
+                    <td>
+                        <input type="text" name="ho_ten" placeholder="" 
+                        style="border: none; outline: none; background-color: transparent; width: 90%" />
+                    </td>
+                    <td>
+                        <input type="text" name="diem15" placeholder="" 
+                        style="border: none; outline: none; background-color: transparent; width: 90%" />
+                    </td>
+                    <td>
+                        <input type="text" name="diem1tiet" placeholder="" 
+                        style="border: none; outline: none; background-color: transparent; width: 90%" />
+                    </td>
+                    <td>
+                        <input type="text" name="diem1tiet" placeholder="" 
+                        style="border: none; outline: none; background-color: transparent; width: 90%" />
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        
+        <button type="button" id="addRowBtn">Thêm sinh viên</button>
+       
+
+    </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/script.js"></script>
+    
+
+
+
+    
+{% endblock %}

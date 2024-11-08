@@ -103,5 +103,12 @@ def index():
 def classList():
     return render_template('class.html')
 
+## bang diem hoc sinh
+@app.route('/point')
+def pointList():
+    return render_template('point.html')
+
+
+## Ham ket thuc
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=True)
