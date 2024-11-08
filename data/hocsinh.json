@@ -61,5 +61,23 @@
         "GioiTinh": "Nữ",
         "DiaChi": "Xuân Lộc",
         "Email": "foqeifoq@gmail.com"
+    },
+    {
+        "MaHS": 8,
+        "FullName": "Nguyễn Thị H",
+        "NgaySinh": "2004-02-29",
+        "SDT": "0239841421",
+        "GioiTinh": "Nữ",
+        "DiaChi": "Xuân Lộc",
+        "Email": "fwoefiowawd@gmail.com"
+    },
+    {
+        "MaHS": 9,
+        "FullName": "Nguyễn Thị J",
+        "NgaySinh": "2005-11-22",
+        "SDT": "0284192847",
+        "GioiTinh": "Nữ",
+        "DiaChi": "Xuân Lộc",
+        "Email": "FOWEIFJOQ@gmail.com"
     }
 ]

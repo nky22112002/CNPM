@@ -42,8 +42,11 @@ def fetch_data_from_db():
 # Chạy hàm để lấy dữ liệu
 fetch_data_from_db()
 
+
+
 @app.route('/submit', methods=['POST'])
 def submit():
+    print("POST request received at /submit")  # In ra khi nhận được yêu cầu
     # Lấy dữ liệu từ form
     ho_ten = request.form['ho_ten']
     gioi_tinh = request.form['gioi_tinh']
@@ -52,6 +55,8 @@ def submit():
     so_dien_thoai = request.form['so_dien_thoai']
     email = request.form['email']
     
+    if not ho_ten or not gioi_tinh or not ngay_sinh or not dia_chi or not so_dien_thoai or not email:
+        return "Vui lòng điền đầy đủ thông tin!", 400
     # Chuyển đổi chuỗi ngày sinh thành đối tượng datetime
     try:
         ngay_sinh = datetime.strptime(ngay_sinh, '%d/%m/%Y')
@@ -85,13 +90,16 @@ def submit():
     finally:
         cursor.close()
         conn.close()
+
     
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
+@app.route('/class')
+def classList():
+    return render_template('class.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=True)
