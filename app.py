@@ -39,7 +39,7 @@ def fetch_data_from_db():
             cursor.close()
             connection.close()
 
-# Chạy hàm để lấy dữ liệu
+####### Chạy hàm để lấy dữ liệu
 #fetch_data_from_db()
 
 
