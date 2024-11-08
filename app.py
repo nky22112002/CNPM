@@ -40,7 +40,7 @@ def fetch_data_from_db():
             connection.close()
 
 # Chạy hàm để lấy dữ liệu
-fetch_data_from_db()
+#fetch_data_from_db()
 
 
 
