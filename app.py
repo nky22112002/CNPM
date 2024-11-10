@@ -12,35 +12,35 @@ db_config = {
     'host': 'localhost',
     'database': 'student_management'
 }
-def fetch_data_from_db():
-    try:
-        # Tạo kết nối
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+# def fetch_data_from_db():
+#     try:
+#         # Tạo kết nối
+#         connection = get_db_connection()
+#         cursor = connection.cursor(dictionary=True)
 
-        # Thực hiện truy vấn
-        query = "SELECT * FROM hoc_sinh"
-        cursor.execute(query)
+#         # Thực hiện truy vấn
+#         query = "SELECT * FROM hoc_sinh"
+#         cursor.execute(query)
 
-        # Lấy dữ liệu từ cơ sở dữ liệu
-        results = cursor.fetchall()
+#         # Lấy dữ liệu từ cơ sở dữ liệu
+#         results = cursor.fetchall()
 
-        # Ghi dữ liệu vào file hocsinh.json
-        with open('data/hocsinh.json', 'w', encoding='utf-8') as f:
-            json.dump(results, f, ensure_ascii=False, indent=4)
+#         # Ghi dữ liệu vào file hocsinh.json
+#         with open('data/hocsinh.json', 'w', encoding='utf-8') as f:
+#             json.dump(results, f, ensure_ascii=False, indent=4)
 
-        print("Dữ liệu đã được ghi vào hocsinh.json")
+#         print("Dữ liệu đã được ghi vào hocsinh.json")
 
-    except mysql.connector.Error as err:
-        print(f"Lỗi: {err}")
+#     except mysql.connector.Error as err:
+#         print(f"Lỗi: {err}")
 
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+#     finally:
+#         if connection.is_connected():
+#             cursor.close()
+#             connection.close()
 
-# Chạy hàm để lấy dữ liệu
-fetch_data_from_db()
+# # Chạy hàm để lấy dữ liệu
+# fetch_data_from_db()
 
 
 
@@ -103,5 +103,12 @@ def index():
 def classList():
     return render_template('class.html')
 
+@app.route('/point')
+def Point():
+    return render_template('point.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=True)
+
+
+
