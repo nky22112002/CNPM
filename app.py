@@ -6,12 +6,7 @@ import mysql.connector
 app = Flask(__name__)
 app.config['DEBUG'] = True  # Bật chế độ debug
 
-db_config = {
-    'user': 'root',
-    'password': '',
-    'host': 'localhost',
-    'database': 'student_management'
-}
+
 # def fetch_data_from_db():
 #     try:
 #         # Tạo kết nối
@@ -106,6 +101,27 @@ def classList():
 @app.route('/point')
 def Point():
     return render_template('point.html')
+
+# Route để tìm kiếm sinh viên
+@app.route('/search_student', methods=['GET'])
+def search_student():
+    query = request.args.get('query')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    if query:
+        # Tìm kiếm dữ liệu trong cơ sở dữ liệu
+        cursor.execute("""
+            SELECT FullName, GioiTinh, YEAR(NgaySinh) AS NamSinh, DiaChi
+            FROM hoc_sinh
+            WHERE FullName LIKE %s
+        """, (f"%{query}%",))
+        results = cursor.fetchall()
+        
+        # Trả về kết quả dưới dạng JSON
+        return jsonify(results)
+    else:
+        return jsonify([])
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=True)
