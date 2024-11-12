@@ -2,6 +2,8 @@ from flask import Flask, json, render_template, jsonify, request, redirect, url_
 from datetime import datetime
 from db_connector import get_db_connection
 import mysql.connector
+import traceback
+import json
 
 app = Flask(__name__)
 app.config['DEBUG'] = True  # Bật chế độ debug
@@ -112,7 +114,7 @@ def search_student():
     if query:
         # Tìm kiếm dữ liệu trong cơ sở dữ liệu
         cursor.execute("""
-            SELECT FullName, GioiTinh, YEAR(NgaySinh) AS NamSinh, DiaChi
+            SELECT MaHS, FullName, GioiTinh, YEAR(NgaySinh) AS NamSinh, DiaChi
             FROM hoc_sinh
             WHERE FullName LIKE %s
         """, (f"%{query}%",))
@@ -122,6 +124,44 @@ def search_student():
         return jsonify(results)
     else:
         return jsonify([])
+
+@app.route('/add_class_list', methods=['POST'])
+def add_class_list():
+    # Lấy dữ liệu từ request
+    data = request.get_json()
+    TenLop = data['TenLop']
+    MaHS_list = data['MaHS']  # Mảng mã học sinh đã chọn
+
+    # Kết nối đến cơ sở dữ liệu
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # Mảng để lưu kết quả thông báo
+    results = []
+
+    try:
+        # Duyệt qua từng mã học sinh trong mảng MaHS_list
+        for MaHS in MaHS_list:
+            # Gọi stored procedure AddStudentToClass với từng MaHS và TenLop
+            cursor.callproc('AddStudentToClass', [MaHS, TenLop])
+
+            # Lấy kết quả trả về từ stored procedure
+            for result in cursor.stored_results():
+                message = result.fetchone()[0]  # Giả sử message là cột đầu tiên trong kết quả
+                results.append({'MaHS': MaHS, 'message': message})
+                
+        connection.commit()  # Commit các thay đổi vào cơ sở dữ liệu sau khi gọi stored procedure
+
+        # Trả về kết quả với mã HTTP 200
+        return jsonify(results), 200
+
+    except Exception as e:
+        print("Error occurred:", e)
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=True)

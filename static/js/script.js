@@ -1,3 +1,5 @@
+let selectedStudents = [];
+
 $('#studentForm').submit(function(event) {
     event.preventDefault();
     $.ajax({
@@ -83,13 +85,13 @@ function fetchSuggestions(rowId) {
                 if (data.length > 0) {
                     // Hiển thị kết quả trong nav
                     data.forEach(item => {
-                        let li = $(`<li class="suggestion-item">${item[0]} | ${item[1]} | ${item[2]} | ${item[3]}</li>`);  // item[0] là FullName nếu dữ liệu trả về là mảng con
+                        let li = $(`<li class="suggestion-item">${item[1]} | ${item[2]} | ${item[3]} | ${item[4]}</li>`);  // item[0] là FullName nếu dữ liệu trả về là mảng con
                         li.click(function() {
                             selectStudent(rowId, item);  // Hàm chọn sinh viên
                         });
                         searchResults.append(li);
                     });
-
+                    console.log("selectedStudent: ", selectedStudents);
                     // Cập nhật vị trí của #searchNav theo thẻ input
                     let inputPosition = $(`#nameInput_${rowId}`).offset();  // Lấy vị trí của thẻ input
                     let inputHeight = $(`#nameInput_${rowId}`).outerHeight();  // Lấy chiều cao của thẻ input
@@ -121,15 +123,63 @@ function fetchSuggestions(rowId) {
 
 // Hàm để chọn sinh viên và cập nhật các thẻ label
 function selectStudent(rowId, item) {
-    // item[0] là FullName, item[1] là Giới tính, item[2] là Năm sinh, item[3] là Địa chỉ
-    $(`#nameInput_${rowId}`).val(item[0]); // Cập nhật tên vào ô input
-    $(`#genderLabel_${rowId}`).text(item[1]); // Cập nhật giới tính
-    $(`#birthYearLabel_${rowId}`).text(item[2]); // Cập nhật năm sinh
-    $(`#addressLabel_${rowId}`).text(item[3]); // Cập nhật địa chỉ
+    const studentId = item[0];  // Mã sinh viên
+    const existingStudentId = selectedStudents[rowId - 1]; // Lấy giá trị sinh viên hiện tại của rowId
+
+    // Nếu có giá trị sinh viên cũ, xóa nó khỏi mảng trước khi thêm giá trị mới
+    if (existingStudentId) {
+        const index = selectedStudents.indexOf(existingStudentId);
+        if (index !== -1) {
+            selectedStudents.splice(index, 1);  // Xóa giá trị sinh viên cũ
+        }
+    }
+
+    // Thêm mã sinh viên mới vào mảng cho rowId
+    selectedStudents[rowId - 1] = studentId;
+    $(`#nameInput_${rowId}`).val(item[1]); // Cập nhật tên vào ô input
+    $(`#genderLabel_${rowId}`).text(item[2]); // Cập nhật giới tính
+    $(`#birthYearLabel_${rowId}`).text(item[3]); // Cập nhật năm sinh
+    $(`#addressLabel_${rowId}`).text(item[4]); // Cập nhật địa chỉ
 
     // Ẩn nav sau khi chọn
     $('#searchNav').hide();
 }
+
+// Hàm gửi mảng selectedStudents tới server khi nhấn nút "Thêm vào lớp"
+function sendSelectedStudentsToServer() {
+    const lop = $('input[name="lop"]').val();  // Lấy tên lớp từ ô input
+    console.log("Lớp:", lop);
+    console.log("selectedStudent:", selectedStudents);
+
+    if (lop && selectedStudents.length > 0) {
+        $.ajax({
+            url: '/add_class_list',  // Đường dẫn tới route Flask xử lý
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                TenLop: lop,
+                MaHS: selectedStudents  // Gửi mảng mã học sinh
+            }),
+            success: function(response) {
+                response.forEach(item => {
+                    alert('Học sinh với STT ' + item.MaHS + ': ' + item.message);  // Hiển thị thông báo từ server
+                    console.log("Response from server:", item.MaHS + ': ' + item.message);
+
+                });            },
+            error: function(error) {
+                console.error("Error sending data:", error);
+                alert('Có lỗi khi gửi dữ liệu!');
+            }
+        });
+    } else {
+        alert("Vui lòng nhập lớp và chọn học sinh!");
+    }
+}
+
+// Hàm được gọi khi người dùng nhấn nút "Thêm vào lớp"
+$('#addClassBtn').on('click', function() {
+    sendSelectedStudentsToServer();  // Gửi mảng selectedStudents tới server
+});
 
 
 
