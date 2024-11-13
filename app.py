@@ -105,7 +105,7 @@ def Point():
     return render_template('point.html')
 
 @app.route('/statistics')
-def Point():
+def stactistics():
     return render_template('statistics.html')
 
 # Route để tìm kiếm sinh viên
@@ -167,9 +167,71 @@ def add_class_list():
         cursor.close()
         connection.close()
 
+
+    ### Point index xuất danh sách học sinh
+@app.route('/get-students', methods=['GET'])
+def get_students():
+    # Lấy tham số từ request
+    ten_lop = request.args.get('ten_lop')
+    ten_mh = request.args.get('ten_mh')
+    hoc_ky = request.args.get('hoc_ky')
+    nam_hoc = request.args.get('nam_hoc')
+
+    # Kiểm tra xem các tham số có hợp lệ không
+    if not (ten_lop and ten_mh and hoc_ky and nam_hoc):
+        return jsonify({'error': 'Thiếu tham số!'}), 400
+
+    try:
+        # Kết nối đến cơ sở dữ liệu
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)  # Lấy kết quả dưới dạng dictionary
+
+        # Gọi stored procedure 'TimThongTinHocSinh' với các tham số từ request
+        cursor.callproc('TimThongTinHocSinh', [ten_lop, ten_mh, hoc_ky, nam_hoc])
+
+        # Mảng để lưu kết quả thông báo
+        students = []
+
+        # Lấy kết quả trả về từ stored procedure
+        for result in cursor.stored_results():
+            # Mỗi result chứa dữ liệu trả về, như ma_hoc_sinh, ten_hoc_sinh, id_bang_diem
+            rows = result.fetchall()          
+            
+            # Duyệt qua từng học sinh trong kết quả trả về
+            for index, row in enumerate(rows):
+                # Đảm bảo các cột từ stored procedure khớp với tên trong mã (ma_hoc_sinh, ten_hoc_sinh, id_bang_diem)
+
+                
+                student = {
+                    "stt": index + 1,  # STT là chỉ số trong danh sách
+                    "ten_hoc_sinh": row['ten_hoc_sinh'],  # Tên học sinh
+                    "diem_15_phut": None,  # Điểm 15 phút (có thể cần lấy thêm từ bảng điểm)
+                    "diem_1_tiet": None,    # Điểm 1 tiết (có thể cần lấy thêm từ bảng điểm)
+                    "diem_thi": None,       # Điểm thi (có thể cần lấy thêm từ bảng điểm)
+                    "ma_hoc_sinh": row['ma_hoc_sinh'],  # Mã học sinh (hoặc ID học sinh)
+                    "id_bang_diem": row['id_bang_diem'] # ID bảng điểm
+                }
+                students.append(student)
+
+        # Kiểm tra nếu có học sinh
+        if students:
+            return jsonify(students)
+        else:
+            return jsonify({'message': 'Không có dữ liệu phù hợp.'}), 404
+
+    except mysql.connector.Error as e:
+        # Xử lý lỗi kết nối hoặc truy vấn
+        print(f"Error: {e}")
+        return jsonify({"error": "Không thể lấy dữ liệu. Vui lòng kiểm tra lại!"}), 500
+
+    finally:
+        # Đảm bảo đóng kết nối và con trỏ sau khi sử dụng
+        cursor.close()
+        connection.close()
+
+    
+    
+    
+#####
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=True)
-    ### test 
-
-
-

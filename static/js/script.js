@@ -181,7 +181,50 @@ $('#addClassBtn').on('click', function() {
     sendSelectedStudentsToServer();  // Gửi mảng selectedStudents tới server
 });
 
+// Hàm lấy danh sách học sinh từ lớp, môn, học kỳ, năm học
+$(document).ready(function() {
+    $('#fetchDataBtn').click(function() {
+        // Lấy giá trị từ các ô input
+        let lop = $('input[name="ten-lop"]').val();
+        let mon = $('input[name="ten-mh"]').val();
+        let hocKy = $('input[name="hoc-ky"]').val();
+        let namHoc = $('input[name="nam-hoc"]').val();
 
+        // Gửi yêu cầu AJAX đến Flask để gọi Stored Procedure
+        $.ajax({
+            url: '/get-students',
+            type: 'GET',
+            data: { ten_lop: lop, ten_mh: mon, hoc_ky: hocKy, nam_hoc: namHoc },
+            success: function(data) {
+                // Xóa các hàng cũ trong bảng (nếu có)
+                $('#studentTableBody').find("tr:gt(0)").remove();
+
+                
+
+                // Kiểm tra và hiển thị dữ liệu từ Stored Procedure
+                if (data && data.length > 0) {
+                    data.forEach((row, index) => {
+                        $('#studentTableBody').append(`
+                            <tr style="text-align: center;">
+                                <td style="width: 5%;">${index + 1}</td>
+                                <td style="width: 30%;">${row.ten_hoc_sinh}</td>
+                                <td style="width: 15%;">${row.diem_15_phut || 'Chưa có'}</td>
+                                <td style="width: 20%;">${row.diem_1_tiet || 'Chưa có'}</td>
+                                <td style="width: 30%;">${row.diem_thi || 'Chưa có'}</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    $('#studentTableBody').append('<tr><td colspan="5" style="text-align: center;">Không có dữ liệu</td></tr>');
+                }
+            },
+            error: function(err) {
+                console.log("Error:", err);
+                alert("Không thể lấy dữ liệu. Vui lòng kiểm tra lại!");
+            }
+        });
+    });
+}); 
 
 
 

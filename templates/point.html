@@ -1,7 +1,7 @@
 {% extends 'layout/base_point.html' %}
 
 {% block content %}
-    <form id="studentForm" method="POST" action="{{ url_for('submit') }}">
+    <form id="studentForm" method="GET" action="{{ url_for('submit') }}">
       <div class="table-responsive">
         <table class="table table-bordered"  id="studentClass" style="width: 100%;">
             <thead>
@@ -12,10 +12,10 @@
                 <!-- Hàng thứ hai với hai ô chia 50% mỗi ô -->
                 <tr>
                     <td colspan="3" style="width: 50%;">Lớp:
-                        <input type="text" name="lop" placeholder="......" style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                        <input type="text" name="ten-lop" placeholder="......" style="border: none; outline: none; background-color: transparent; width: 90%;" />
                     </td>
                     <td colspan="2" style="width: 50%;">Môn:
-                        <input type="text" name="mon" placeholder="......" style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                        <input type="text" name="ten-mh" placeholder="......" style="border: none; outline: none; background-color: transparent; width: 90%;" />
                     </td>
                 </tr>
                 <tr>
@@ -27,7 +27,7 @@
                     </td>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="studentTableBody">
                 <!-- Hàng nội dung với các cột chi tiết -->
                 <tr style="text-align: center;">
                     <td style="width: 5%;">STT</td>
@@ -40,8 +40,9 @@
 
             </tbody>
         </table>
+        <button type="button" id="fetchDataBtn">Lấy danh sách học sinh</button>
+        <button type="button" id="addRowBtn">Nhập điểm</button>
         
-        <button type="button" id="addRowBtn">Thêm sinh viên</button>
     </div>
     </form>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
