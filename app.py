@@ -104,6 +104,10 @@ def classList():
 def Point():
     return render_template('point.html')
 
+@app.route('/statistics')
+def Point():
+    return render_template('statistics.html')
+
 # Route để tìm kiếm sinh viên
 @app.route('/search_student', methods=['GET'])
 def search_student():
