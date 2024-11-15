@@ -56,7 +56,7 @@ def submit():
         return "Vui lòng điền đầy đủ thông tin!", 400
     # Chuyển đổi chuỗi ngày sinh thành đối tượng datetime
     try:
-        ngay_sinh = datetime.strptime(ngay_sinh, '%d/%m/%Y')
+        ngay_sinh = datetime.strptime(ngay_sinh, '%Y-%m-%d')
     except ValueError:
         return "Ngày sinh không hợp lệ.", 400
 

@@ -14,25 +14,33 @@ $('#studentForm').submit(function(event) {
         }
     });
 
-    // Xử lý input ngày sinh
-    document.querySelector('input[name="ngay_sinh"]').addEventListener('input', function(e) {
-        let value = this.value.replace(/[^0-9/]/g, ''); // Xóa ký tự không hợp lệ
+    
+    
+});
+document.addEventListener('DOMContentLoaded', function() {
+    // Lắng nghe sự kiện "input" của thẻ input
+    const inputElement = document.querySelector('input[name="ngay_sinh"]');
 
-        // Kiểm tra nếu không phải thao tác xóa (người dùng nhập thêm)
+    inputElement.addEventListener('input', function(e) {
+        let value = this.value.replace(/[^0-9-]/g, ''); // Chỉ giữ lại số, bỏ dấu '-'
+
+        // Kiểm tra nếu người dùng không xóa ký tự (tránh thêm dấu khi xóa)
         if (e.inputType !== 'deleteContentBackward') {
-            if (value.length === 2 || value.length === 5) {
-                // Chỉ thêm dấu '/' nếu không có tại vị trí đó
-                if (value[value.length - 1] !== '/') {
-                    value += '/';
+            // Chỉ thêm dấu '-' sau 2 ký tự và 5 ký tự
+            if (value.length === 4 || value.length === 7) {
+                // Thêm dấu '-' nếu chưa có tại vị trí đó
+                if (value[value.length - 1] !== '-') {
+                    value += '-';
                 }
             }
         }
 
-        // Cập nhật giá trị ô nhập
-        this.value = value.slice(0, 10); // Giới hạn tối đa 10 ký tự
+        // Giới hạn độ dài chuỗi là 10 ký tự (dd-mm-yyyy)
+        this.value = value.slice(0, 10);
     });
-    
 });
+
+
 $(document).ready(function() {
     // Xử lý sự kiện click vào nút "Thêm hàng"
     $('#addRowBtn').click(function() {
