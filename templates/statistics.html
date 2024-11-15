@@ -13,15 +13,15 @@
                     </tr>
                     <tr>
                         <td colspan="3" style="width: 50%;">Môn:
-                            <input type="text" name="mon" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                            <input type="text" name="mon" placeholder="Toán" style="border: none; outline: none; background-color: transparent; width: 90%;" />
                         </td>
                         <td colspan="2" style="width: 50%;">Học kỳ:
-                            <input type="text" name="hoc_ky" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                            <input type="text" name="hoc_ky" placeholder="1" style="border: none; outline: none; background-color: transparent; width: 90%;" />
                         </td>
                     </tr>
                     <tr>
                         <td colspan="3" style="width: 50%;">Năm học:
-                            <input type="text" name="nam_hoc" placeholder=".........." style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                            <input type="text" id="namHoc" name="nam_hoc" placeholder="YYYY-YYYY+1" style="border: none; outline: none; background-color: transparent; width: 80%;" />
                         </td>
                         <td colspan="2" style="width: 50%;">
                             <input type="text" style="border: none; outline: none; background-color: transparent; width: 90%;" />
@@ -31,23 +31,12 @@
                 <tbody>
                     <tr style="text-align: center;">
                         <td style="width: 5%;">STT</td>
-                        <td style="width: 30%;">Họ tên</td>
-                        <td style="width: 15%;">Giới tính</td>
-                        <td style="width: 20%;">Năm sinh</td>
-                        <td style="width: 30%;">Địa chỉ</td>
+                        <td style="width: 30%;">Lớp</td>
+                        <td style="width: 15%;">Sĩ số</td>
+                        <td style="width: 20%;">Số lượng đạt</td>
+                        <td style="width: 30%;">Tỷ lệ</td>
                     </tr>
-                    <tr style="text-align: center;">
-                        <td style="width: 5%;">1</td>
-                        <td style="width: 30%;">
-                            <input type="text" id="nameInput_1" name="ho_ten_1" 
-                                   onkeyup="fetchSuggestions(1)" 
-                                   style="border: none; outline: none; background-color: transparent; width: 100%; text-align: center;">
-                            <div id="suggestions_1" class="suggestions-box"></div>
-                        </td>
-                        <td style="width: 15%;"><label id="genderLabel_1">-</label></td>
-                        <td style="width: 20%;"><label id="birthYearLabel_1">-</label></td>
-                        <td style="width: 30%;"><label id="addressLabel_1">-</label></td>
-                    </tr>
+                    
                     
                 </tbody>
                 <nav id="searchNav" class="navbar navbar-light" style="display:none;">
@@ -59,7 +48,7 @@
                 </nav>
             </table>
             
-            <button type="button" id="addRowBtn">Thêm hàng</button>
+            <button type="submit" id="showTable">Xuất bảng</button>
             <button type="button" id="addClassBtn">Thêm vào lớp</button>
 
         </div>
@@ -67,5 +56,11 @@
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/static/js/script.js"></script>
+    <script>
+        // Tự động điền năm học hiện tại vào placeholder của ô "Năm học"
+        const currentYear = new Date().getFullYear();
+        const nextYear = currentYear + 1;
+        document.getElementById('namHoc').placeholder = `${currentYear}-${nextYear}`;
+    </script>
 
 {% endblock %}

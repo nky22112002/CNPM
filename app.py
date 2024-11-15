@@ -105,7 +105,7 @@ def Point():
     return render_template('point.html')
 
 @app.route('/statistics')
-def Point():
+def Statistics():
     return render_template('statistics.html')
 
 # Route để tìm kiếm sinh viên
