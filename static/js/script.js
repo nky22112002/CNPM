@@ -213,12 +213,18 @@ $(document).ready(function() {
                 if (data && data.length > 0) {
                     data.forEach((row, index) => {
                         $('#studentTableBody').append(`
-                            <tr style="text-align: center;">
+                             <tr style="text-align: center;">
                                 <td style="width: 5%;">${index + 1}</td>
                                 <td style="width: 30%;">${row.ten_hoc_sinh}</td>
-                                <td style="width: 15%;">${row.diem_15_phut || 'Chưa có'}</td>
-                                <td style="width: 20%;">${row.diem_1_tiet || 'Chưa có'}</td>
-                                <td style="width: 30%;">${row.diem_thi || 'Chưa có'}</td>
+                                <td style="width: 15%;">
+                                    <input type="text" class="diem-15phut" data-id="${row.ma_hoc_sinh}" value="${row.diem_15_phut || ''}" placeholder="" />
+                                </td>
+                                <td style="width: 20%;">
+                                    <input type="text" class="diem-1tiet" data-id="${row.ma_hoc_sinh}" value="${row.diem_1_tiet || ''}" placeholder="" />
+                                </td>
+                                <td style="width: 30%;">
+                                    <input type="text" class="diem-thi" data-id="${row.ma_hoc_sinh}" value="${row.diem_thi || ''}" placeholder="" />
+                                </td>
                             </tr>
                         `);
                     });

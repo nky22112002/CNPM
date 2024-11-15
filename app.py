@@ -168,6 +168,7 @@ def add_class_list():
         connection.close()
 
 
+
     ### Point index xuất danh sách học sinh
 @app.route('/get-students', methods=['GET'])
 def get_students():
@@ -187,30 +188,30 @@ def get_students():
         cursor = connection.cursor(dictionary=True)  # Lấy kết quả dưới dạng dictionary
 
         # Gọi stored procedure 'TimThongTinHocSinh' với các tham số từ request
-        cursor.callproc('TimThongTinHocSinh', [ten_lop, ten_mh, hoc_ky, nam_hoc])
+        cursor.callproc('TimThongTinHocSinh', [ten_lop, ten_mh, nam_hoc, hoc_ky])
 
         # Mảng để lưu kết quả thông báo
         students = []
 
         # Lấy kết quả trả về từ stored procedure
         for result in cursor.stored_results():
-            # Mỗi result chứa dữ liệu trả về, như ma_hoc_sinh, ten_hoc_sinh, id_bang_diem
-            rows = result.fetchall()          
-            
+            # Mỗi result chứa dữ liệu trả về, như ma_hoc_sinh, ten_hoc_sinh
+            rows = result.fetchall()
+
             # Duyệt qua từng học sinh trong kết quả trả về
             for index, row in enumerate(rows):
-                # Đảm bảo các cột từ stored procedure khớp với tên trong mã (ma_hoc_sinh, ten_hoc_sinh, id_bang_diem)
-
-                
+                # Đảm bảo các cột từ stored procedure khớp với tên trong mã
                 student = {
+                    "ma_hoc_sinh": row['ma_hoc_sinh'],
                     "stt": index + 1,  # STT là chỉ số trong danh sách
                     "ten_hoc_sinh": row['ten_hoc_sinh'],  # Tên học sinh
-                    "diem_15_phut": None,  # Điểm 15 phút (có thể cần lấy thêm từ bảng điểm)
-                    "diem_1_tiet": None,    # Điểm 1 tiết (có thể cần lấy thêm từ bảng điểm)
-                    "diem_thi": None,       # Điểm thi (có thể cần lấy thêm từ bảng điểm)
-                    "ma_hoc_sinh": row['ma_hoc_sinh'],  # Mã học sinh (hoặc ID học sinh)
-                    "id_bang_diem": row['id_bang_diem'] # ID bảng điểm
+                    "diem_15_phut": None,  # Điểm 15 phút (có thể cần lấy thêm từ bảng điểm nếu có)
+                    "diem_1_tiet": None,    # Điểm 1 tiết (có thể cần lấy thêm từ bảng điểm nếu có)
+                    "diem_thi": None,       # Điểm thi (có thể cần lấy thêm từ bảng điểm nếu có)
+                    
                 }
+
+                
                 students.append(student)
 
         # Kiểm tra nếu có học sinh
@@ -228,6 +229,9 @@ def get_students():
         # Đảm bảo đóng kết nối và con trỏ sau khi sử dụng
         cursor.close()
         connection.close()
+   ######## Lưu điểm sau khi xuất danh sách học sinh
+
+
 
     
     
