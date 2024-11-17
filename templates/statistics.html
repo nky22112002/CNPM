@@ -1,22 +1,22 @@
-{% extends 'layout/base_class.html' %}
+{% extends 'layout/base_statistics.html' %}
 
 {% block content %}
     <!-- Navigation Bar -->
     
 
-    <form id="studentForm" method="POST" action="{{ url_for('submit') }}">
+    <form method="POST" id="reportForm">
         <div class="table-responsive">
-            <table class="table table-bordered" id="studentClass" style="width: 100%;">
+            <table class="table table-bordered" style="width: 100%;">
                 <thead>
                     <tr>
                         <th colspan="5" style="text-align: center; width: 100%;">BÁO CÁO TỔNG KẾT MÔN HỌC</th>
                     </tr>
                     <tr>
                         <td colspan="3" style="width: 50%;">Môn:
-                            <input type="text" name="mon" placeholder="Toán" style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                            <input type="text" id="mon" name="mon" placeholder="Toán" style="border: none; outline: none; background-color: transparent; width: 90%;" />
                         </td>
                         <td colspan="2" style="width: 50%;">Học kỳ:
-                            <input type="text" name="hoc_ky" placeholder="1" style="border: none; outline: none; background-color: transparent; width: 90%;" />
+                            <input type="text" id="hocKy" name="hoc_ky" placeholder="1" style="border: none; outline: none; background-color: transparent; width: 90%;" />
                         </td>
                     </tr>
                     <tr>
@@ -49,18 +49,17 @@
             </table>
             
             <button type="submit" id="showTable">Xuất bảng</button>
-            <button type="button" id="addClassBtn">Thêm vào lớp</button>
-
+            <button type="button" id="showChart">Biểu đồ</button>
+            <div style="width: 80%; margin: auto; padding: 20px;">
+                <canvas id="summaryChart"></canvas>
+            </div>
+            
         </div>
     </form>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/static/js/script.js"></script>
-    <script>
-        // Tự động điền năm học hiện tại vào placeholder của ô "Năm học"
-        const currentYear = new Date().getFullYear();
-        const nextYear = currentYear + 1;
-        document.getElementById('namHoc').placeholder = `${currentYear}-${nextYear}`;
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 {% endblock %}

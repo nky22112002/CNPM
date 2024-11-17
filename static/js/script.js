@@ -234,5 +234,146 @@ $(document).ready(function() {
     });
 }); 
 
+$(document).ready(function () {
+    $("#reportForm").on("submit", function (e) {
+        e.preventDefault(); // Ngăn chặn hành động submit mặc định của form
+
+        // Lấy giá trị từ các input
+        const mon = $("#mon").val();
+        const hocKy = $("#hocKy").val();
+        const namHoc = $("#namHoc").val();
+
+        // Gửi dữ liệu qua AJAX đến Flask
+        $.ajax({
+            url: "/show_summary_table", // URL của Flask endpoint
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                mon: mon,
+                hoc_ky: hocKy,
+                nam_hoc: namHoc
+            }),
+            success: function (response) {
+                console.log("Response from server:", response);
+
+                // Xử lý dữ liệu trả về để hiển thị vào bảng
+                const tbody = $("table tbody");
+                tbody.find("tr:not(:first)").remove(); // Xóa các hàng cũ, giữ lại hàng tiêu đề
+
+                response.forEach((item, index) => {
+                    const [lop, siSo, soLuongDat] = item;
+                    const tyLe = ((soLuongDat / siSo) * 100).toFixed(2); // Tính tỷ lệ (%)
+
+                    const newRow = `
+                        <tr style="text-align: center;">
+                            <td>${index + 1}</td>
+                            <td>${lop}</td>
+                            <td>${siSo}</td>
+                            <td>${soLuongDat}</td>
+                            <td>${tyLe}%</td>
+                        </tr>
+                    `;
+
+                    tbody.append(newRow); // Thêm hàng mới vào tbody
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+            }
+        });
+    });
+});
+    
+$(document).ready(function() {
+    let chartInstance = null; // Biến lưu trữ biểu đồ để cập nhật lại khi có dữ liệu mới
+
+    // Hàm vẽ biểu đồ
+    function drawChart(labels, data) {
+        const ctx = document.getElementById('summaryChart').getContext('2d');
+
+        // Xóa biểu đồ cũ nếu có
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        // Tạo biểu đồ mới
+        chartInstance = new Chart(ctx, {
+            type: 'bar', // Loại biểu đồ (cột)
+            data: {
+                labels: labels, // Tên các lớp
+                datasets: [{
+                    label: 'Tỷ lệ đạt (%)',
+                    data: data, // Dữ liệu tỷ lệ
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)', // Màu nền
+                    borderColor: 'rgba(75, 192, 192, 1)', // Màu viền
+                    borderWidth: 1, // Độ dày viền
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.raw + '%'; // Hiển thị đơn vị %
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Tỷ lệ (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Lớp học'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Xử lý khi nhấn nút "Biểu đồ"
+    $("#showChart").on("click", function() {
+        let labels = [];
+        let data = [];
+
+        // Duyệt qua tất cả các hàng trong bảng và lấy dữ liệu lớp và tỷ lệ đạt
+        $("tbody tr").each(function(index) {
+            // Bỏ qua hàng đầu tiên (tiêu đề)
+            if (index === 0) return;
+        
+            const className = $(this).find("td:nth-child(2)").text(); // Lấy tên lớp (cột 2)
+            const siSo = $(this).find("td:nth-child(3)").text(); // Lấy sĩ số (cột 3)
+            const soLuongDat = $(this).find("td:nth-child(4)").text(); // Lấy số lượng đạt (cột 4)
+        
+            if (className && siSo && soLuongDat) {
+                // Tính tỷ lệ đạt
+                const rate = ((parseInt(soLuongDat) / parseInt(siSo)) * 100).toFixed(2);
+        
+                // Thêm dữ liệu vào mảng labels và data
+                labels.push(className); // Lớp học
+                data.push(rate); // Tỷ lệ đạt
+            }
+        });
+        
+
+        // Vẽ biểu đồ
+        drawChart(labels, data);
+    });
+});
+
+
+
 
 

@@ -7,6 +7,7 @@ import json
 
 app = Flask(__name__)
 app.config['DEBUG'] = True  # Bật chế độ debug
+classSize = 40
 
 
 # def fetch_data_from_db():
@@ -147,7 +148,7 @@ def add_class_list():
         # Duyệt qua từng mã học sinh trong mảng MaHS_list
         for MaHS in MaHS_list:
             # Gọi stored procedure AddStudentToClass với từng MaHS và TenLop
-            cursor.callproc('AddStudentToClass', [MaHS, TenLop])
+            cursor.callproc('AddStudentToClass', [MaHS, TenLop, classSize])
 
             # Lấy kết quả trả về từ stored procedure
             for result in cursor.stored_results():
@@ -230,7 +231,34 @@ def get_students():
         connection.close()
 
     
-    
+@app.route('/show_summary_table', methods=['POST'])
+def show_summary_table():
+    # Lấy dữ liệu từ request
+    data = request.get_json()
+    mon = data.get('mon')
+    hoc_ky = data.get('hoc_ky')
+    nam_hoc = data.get('nam_hoc')
+    print("mon-hocky-namhoc: ", mon, hoc_ky, nam_hoc)
+    # Kết nối đến cơ sở dữ liệu
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    results = []
+    try:
+        cursor.callproc('CalculatePassingStudents', [mon, hoc_ky, nam_hoc])
+        for result in cursor.stored_results():
+            results.extend(result.fetchall())
+
+        print('results summary_table: ', results)
+        return jsonify(results), 200
+
+    except Exception as e:
+        print("Error occurred:", e)
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
     
 #####
 if __name__ == '__main__':
