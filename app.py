@@ -93,21 +93,7 @@ def submit():
 #     1223234
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
 
-@app.route('/class')
-def classList():
-    return render_template('class.html')
-
-@app.route('/point')
-def Point():
-    return render_template('point.html')
-
-@app.route('/statistics')
-def Statistics():
-    return render_template('statistics.html')
 
 # Route để tìm kiếm sinh viên
 @app.route('/search_student', methods=['GET'])
@@ -263,6 +249,26 @@ def show_summary_table():
     finally:
         cursor.close()
         connection.close()
+    
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/class')
+def classList():
+    return render_template('class.html')
+
+@app.route('/point')
+def Point():
+    return render_template('point.html')
+
+@app.route('/statistics')
+def Statistics():
+    return render_template('statistics.html')
+
+@app.route('/admin')
+def admin():
+    return render_template('admin.html')
     
 #####
 if __name__ == '__main__':
