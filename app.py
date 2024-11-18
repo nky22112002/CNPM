@@ -7,38 +7,81 @@ import json
 
 app = Flask(__name__)
 app.config['DEBUG'] = True  # Bật chế độ debug
-classSize = 40
+SETTINGS_FILE = 'settings.json'
+# Đọc cài đặt từ file JSON
+def load_settings():
+    try:
+        with open('settings.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {
+            "classSize": 40,
+            "minAge": 15,
+            "maxAge": 20
+        }
+
+# Sử dụng before_first_request để khởi tạo cài đặt
+@app.before_request
+def initialize_settings():
+    global classSize, minAge, maxAge
+    settings = load_settings()  # Đọc giá trị từ file JSON
+    classSize = settings["classSize"]
+    minAge = settings["minAge"]
+    maxAge = settings["maxAge"]
+    print(f"Settings loaded: {settings}")  # In ra để kiểm tra
 
 
-# def fetch_data_from_db():
-#     try:
-#         # Tạo kết nối
-#         connection = get_db_connection()
-#         cursor = connection.cursor(dictionary=True)
 
-#         # Thực hiện truy vấn
-#         query = "SELECT * FROM hoc_sinh"
-#         cursor.execute(query)
 
-#         # Lấy dữ liệu từ cơ sở dữ liệu
-#         results = cursor.fetchall()
+@app.route('/update_setting', methods=['POST'])
+def update_setting():
+    global classSize, minAge, maxAge
 
-#         # Ghi dữ liệu vào file hocsinh.json
-#         with open('data/hocsinh.json', 'w', encoding='utf-8') as f:
-#             json.dump(results, f, ensure_ascii=False, indent=4)
+    try:
+        # Lấy dữ liệu từ yêu cầu POST
+        data = request.get_json()
+        name = data.get("name")
+        
+        # Cập nhật biến toàn cục
+        if name == "classSize":
+            classSize = int(data.get("value"))
+        elif name == "ageSettings":
+            # Nếu gửi cả minAge và maxAge
+            minAge = int(data.get("minAge"))
+            maxAge = int(data.get("maxAge"))
+        else:
+            return jsonify({"status": "error", "message": "Invalid setting name"}), 400
 
-#         print("Dữ liệu đã được ghi vào hocsinh.json")
+        # Lưu thay đổi vào file JSON
+        save_settings({
+            "classSize": classSize,
+            "minAge": minAge,
+            "maxAge": maxAge
+        })
 
-#     except mysql.connector.Error as err:
-#         print(f"Lỗi: {err}")
+        return jsonify({"status": "success", "name": name, "minAge": minAge, "maxAge": maxAge})
 
-#     finally:
-#         if connection.is_connected():
-#             cursor.close()
-#             connection.close()
+    except Exception as e:
+        print(f"Error updating setting: {e}")
+        return jsonify({"status": "error", "message": "Failed to update setting"}), 500
 
-# # Chạy hàm để lấy dữ liệu
-# fetch_data_from_db()
+    
+
+@app.route('/get_settings', methods=['GET'])
+def get_settings():
+    return jsonify({
+        "classSize": classSize,
+        "minAge": minAge,
+        "maxAge": maxAge
+    })
+
+def save_settings(data):
+    try:
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(data, f, indent=4)
+    except Exception as e:
+        print(f"Error saving settings: {e}")
+        raise
 
 
 
@@ -68,7 +111,7 @@ def submit():
     tuoi = ngay_hien_tai.year - ngay_sinh.year - ((ngay_hien_tai.month, ngay_hien_tai.day) < (ngay_sinh.month, ngay_sinh.day))
 
     # Kiểm tra điều kiện tuổi
-    if tuoi < 15 or tuoi > 20:
+    if tuoi < minAge or tuoi > maxAge:
         return "Độ tuổi của học sinh không hợp lệ, vui lòng nhập lại", 400
     
     # Kết nối đến cơ sở dữ liệu
