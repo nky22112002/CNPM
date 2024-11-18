@@ -260,8 +260,7 @@ $(document).ready(function () {
                 nam_hoc: namHoc
             }),
             success: function (response) {
-                console.log("Response from server:", response);
-
+                
                 // Xử lý dữ liệu trả về để hiển thị vào bảng
                 const tbody = $("table tbody");
                 tbody.find("tr:not(:first)").remove(); // Xóa các hàng cũ, giữ lại hàng tiêu đề
@@ -282,6 +281,8 @@ $(document).ready(function () {
 
                     tbody.append(newRow); // Thêm hàng mới vào tbody
                 });
+                $("#showChart").show();
+
             },
             error: function (xhr, status, error) {
                 console.error("Error:", error);
