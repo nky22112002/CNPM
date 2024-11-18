@@ -210,7 +210,7 @@ def get_students():
                     "diem_1_tiet": None,    # Điểm 1 tiết (có thể cần lấy thêm từ bảng điểm nếu có)
                     "diem_thi": None,       # Điểm thi (có thể cần lấy thêm từ bảng điểm nếu có)
                     
-                }
+                }                
 
                 
                 students.append(student)
@@ -231,6 +231,121 @@ def get_students():
         cursor.close()
         connection.close()
    ######## Lưu điểm sau khi xuất danh sách học sinh
+@app.route('/save-student-grades', methods=['POST'])
+def save_student_grades():
+    try:
+        # Lấy dữ liệu từ request
+        data = request.get_json()
+        students = data.get('students')
+
+        # Kết nối database và sử dụng cursor như dictionary
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)  # Sử dụng MySQLCursorDict
+
+        for student in students:
+            ma_hoc_sinh = student.get('ma_hoc_sinh')
+            diem_15_phut = student.get('diem_15_phut')
+            diem_1_tiet = student.get('diem_1_tiet')
+            diem_thi = student.get('diem_thi')
+            ten_mh = student.get('ten_mh')
+            hoc_ky = student.get('hoc_ky')
+
+            # Kiểm tra bảng điểm học sinh đã có chưa
+            cursor.execute("""
+                SELECT MaBD FROM bang_diem 
+                WHERE ma_hoc_sinh = %s AND HocKy = %s
+            """, (ma_hoc_sinh, hoc_ky))
+            ma_bang_diem = cursor.fetchone()
+
+            # Nếu không có bảng điểm, tạo bảng điểm mới
+            if not ma_bang_diem:
+                cursor.execute("""
+                    INSERT INTO bang_diem (ma_hoc_sinh, HocKy) 
+                    VALUES (%s, %s)
+                """, (ma_hoc_sinh, hoc_ky))
+                connection.commit()  # Commit để tạo bảng điểm mới
+
+                # Lấy mã bảng điểm mới
+                cursor.execute("""
+                    SELECT MaBD FROM bang_diem 
+                    WHERE ma_hoc_sinh = %s AND HocKy = %s
+                """, (ma_hoc_sinh, hoc_ky))
+                ma_bang_diem = cursor.fetchone()  # Lấy lại MaBD của bảng điểm mới
+                ma_bang_diem = ma_bang_diem['MaBD']  # Truy cập theo tên cột
+
+            else:
+                ma_bang_diem = ma_bang_diem['MaBD']  # Truy cập MaBD từ tuple dưới dạng dictionary
+
+            # Lấy mã môn học từ tên môn học
+            cursor.execute("""
+                SELECT MaMH FROM mon_hoc WHERE TenMH = %s
+            """, (ten_mh,))
+            ma_mon_hoc = cursor.fetchone()
+            if ma_mon_hoc:
+                ma_mon_hoc = ma_mon_hoc['MaMH']
+            else:
+                flash(f"Môn học {ten_mh} không tồn tại.", "error")
+                return jsonify({'error': f"Môn học {ten_mh} không tồn tại!"}), 400
+
+            # Kiểm tra số lượng điểm 15 phút cho môn học này
+            if diem_15_phut:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM bang_diem_chi_tiet 
+                    WHERE ma_bang_diem = %s AND LoaiDiem = '15 phút' AND ma_mon_hoc = %s
+                """, (ma_bang_diem, ma_mon_hoc))
+                existing_diem_15_phut = cursor.fetchone()['COUNT(*)']
+                if existing_diem_15_phut >= 5:
+                    return jsonify({'error': f"Học sinh đã có đủ 5 giá trị điểm 15 phút cho môn học {ten_mh}!"}), 400
+
+            # Kiểm tra số lượng điểm 1 tiết cho môn học này
+            if diem_1_tiet:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM bang_diem_chi_tiet 
+                    WHERE ma_bang_diem = %s AND LoaiDiem = '1 tiết' AND ma_mon_hoc = %s
+                """, (ma_bang_diem, ma_mon_hoc))
+                existing_diem_1_tiet = cursor.fetchone()['COUNT(*)']
+                if existing_diem_1_tiet >= 3:
+                    return jsonify({'error': f"Học sinh đã có đủ 3 giá trị điểm 1 tiết cho môn học {ten_mh}!"}), 400
+
+            # Kiểm tra số lượng điểm thi cho môn học này
+            if diem_thi:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM bang_diem_chi_tiet 
+                    WHERE ma_bang_diem = %s AND LoaiDiem = 'thi' AND ma_mon_hoc = %s
+                """, (ma_bang_diem, ma_mon_hoc))
+                existing_diem_thi = cursor.fetchone()['COUNT(*)']
+                if existing_diem_thi >= 1:
+                    return jsonify({'error': f"Học sinh đã có đủ 1 giá trị điểm thi cho môn học {ten_mh}!"}), 400
+
+            # Thêm điểm vào bảng bang_diem_chi_tiet cho môn học này
+            if diem_15_phut:
+                cursor.execute("""
+                    INSERT INTO bang_diem_chi_tiet (ma_bang_diem, LoaiDiem, SoDiem, ma_mon_hoc)
+                    VALUES (%s, '15 phút', %s, %s)
+                """, (ma_bang_diem, diem_15_phut, ma_mon_hoc))
+            if diem_1_tiet:
+                cursor.execute("""
+                    INSERT INTO bang_diem_chi_tiet (ma_bang_diem, LoaiDiem, SoDiem, ma_mon_hoc)
+                    VALUES (%s, '1 tiết', %s, %s)
+                """, (ma_bang_diem, diem_1_tiet, ma_mon_hoc))
+            if diem_thi:
+                cursor.execute("""
+                    INSERT INTO bang_diem_chi_tiet (ma_bang_diem, LoaiDiem, SoDiem, ma_mon_hoc)
+                    VALUES (%s, 'thi', %s, %s)
+                """, (ma_bang_diem, diem_thi, ma_mon_hoc))
+
+            connection.commit()  # Commit để lưu điểm
+
+        return jsonify({'message': 'Điểm đã được lưu thành công!'}), 200
+
+    except mysql.connector.Error as err:
+        print(f"Lỗi: {err}")
+        return jsonify({'error': 'Đã có lỗi xảy ra khi lưu điểm!'}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
+
 
 
 

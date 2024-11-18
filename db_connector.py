@@ -6,6 +6,7 @@ def get_db_connection():
         'password': '',
         'host': 'localhost',
         'database': 'student_management'
+        
     }
     conn = mysql.connector.connect(**db_config)
     return conn

@@ -238,7 +238,51 @@ $(document).ready(function() {
             }
         });
     });
+    $('#saveScoresBtn').click(function () {
+        let students = [];
+        $('#studentTableBody tr').each(function () {
+            const maHocSinh = $(this).find('input.diem-15phut').data('id');
+            const diem15Phut = $(this).find('input.diem-15phut').val();
+            const diem1Tiet = $(this).find('input.diem-1tiet').val();
+            const diemThi = $(this).find('input.diem-thi').val();
+    
+            if (maHocSinh) {
+                students.push({
+                    ma_hoc_sinh: maHocSinh,
+                    ten_mh: $('input[name="ten-mh"]').val(),
+                    hoc_ky: $('input[name="hoc-ky"]').val(),
+                    diem_15_phut: diem15Phut,
+                    diem_1_tiet: diem1Tiet,
+                    diem_thi: diemThi
+                });
+            }
+        });
+    
+        $.ajax({
+            url: '/save-student-grades',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ students }),
+            success: function (response) {
+                // Hiển thị thông báo khi lưu điểm thành công
+                alert(response.message || 'Điểm đã được lưu thành công!');
+            },
+            error: function (xhr, status, error) {
+                // Lấy dữ liệu lỗi từ server (nếu có)
+                let errorMessage = "Đã xảy ra lỗi trong quá trình lưu điểm!";
+                
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;  // Lấy thông báo lỗi từ server
+                }
+    
+                console.error("Error:", errorMessage);
+                alert(errorMessage);  // Hiển thị thông báo lỗi cụ thể
+            }
+        });
+    });
+    
 }); 
+
 
 $(document).ready(function () {
     $("#reportForm").on("submit", function (e) {
