@@ -304,8 +304,7 @@ $(document).ready(function () {
                 nam_hoc: namHoc
             }),
             success: function (response) {
-                console.log("Response from server:", response);
-
+                
                 // Xử lý dữ liệu trả về để hiển thị vào bảng
                 const tbody = $("table tbody");
                 tbody.find("tr:not(:first)").remove(); // Xóa các hàng cũ, giữ lại hàng tiêu đề
@@ -326,6 +325,8 @@ $(document).ready(function () {
 
                     tbody.append(newRow); // Thêm hàng mới vào tbody
                 });
+                $("#showChart").show();
+
             },
             error: function (xhr, status, error) {
                 console.error("Error:", error);
@@ -420,6 +421,64 @@ $(document).ready(function() {
 
         // Vẽ biểu đồ
         drawChart(labels, data);
+    });
+});
+
+$(document).ready(function () {
+    // Định nghĩa thông báo thành công
+    const successMessage = "Cập nhật thành công!";
+
+    // Gửi dữ liệu cập nhật về server
+    function updateSettings(data) {
+        $.ajax({
+            url: '/update_setting', // Đảm bảo đường dẫn đúng với route Flask
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.status === "success") {
+                    alert(successMessage); // Thông báo thành công
+                } else {
+                    alert("Cập nhật thất bại: " + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert("Có lỗi xảy ra: " + error);
+            }
+        });
+    }
+
+    // Nút thay đổi độ tuổi
+    $("#updateAge").on("click", function () {
+        const minAge = $("#minAge").val();
+        const maxAge = $("#maxAge").val();
+
+        // Kiểm tra nếu minAge và maxAge là số hợp lệ
+        if (!minAge || !maxAge || isNaN(minAge) || isNaN(maxAge)) {
+            alert("Vui lòng nhập độ tuổi hợp lệ!");
+            return;
+        }
+
+        // Cập nhật dữ liệu minAge và maxAge cùng một lần
+        updateSettings({
+            name: "ageSettings", 
+            minAge: parseInt(minAge), 
+            maxAge: parseInt(maxAge)
+        });
+    });
+
+    // Nút thay đổi sĩ số lớp
+    $("#updateClassSize").on("click", function () {
+        const classSize = $("#classSize").val();
+
+        // Kiểm tra nếu classSize là số hợp lệ
+        if (!classSize || isNaN(classSize)) {
+            alert("Vui lòng nhập sĩ số lớp hợp lệ!");
+            return;
+        }
+
+        // Cập nhật dữ liệu
+        updateSettings({ name: "classSize", value: parseInt(classSize) });
     });
 });
 
