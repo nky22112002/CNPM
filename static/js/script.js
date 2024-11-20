@@ -307,6 +307,7 @@ $(document).ready(function() {
             }
         });
     });
+    // Lưu điểm cho học sinh trong danh sách được tìm 
     $('#saveScoresBtn').click(function () {
         let students = [];
         $('#studentTableBody tr').each(function () {
@@ -346,6 +347,67 @@ $(document).ready(function() {
     
                 console.error("Error:", errorMessage);
                 alert(errorMessage);  // Hiển thị thông báo lỗi cụ thể
+            }
+        });
+    });
+    $('#fetchAvgScoresBtn').click(function() {
+        // Lấy giá trị từ các ô input
+        let lop = $('input[name="ten-lop"]').val();
+        let mon = $('input[name="ten-mh"]').val();
+        let namHoc = $('input[name="nam-hoc"]').val();
+    
+        // Gửi yêu cầu AJAX để lấy điểm trung bình
+        $.ajax({
+            url: '/get-avg-scores',
+            type: 'GET',
+            data: { ten_lop: lop, ten_mh: mon, nam_hoc: namHoc },
+            success: function(data) {
+                // Xóa bảng cũ nếu có
+                $('#avgScoresTable').remove();
+    
+                // Kiểm tra và hiển thị bảng điểm trung bình
+                if (data && data.length > 0) {
+                    let tableHtml = `
+                        <table id="avgScoresTable" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th colspan="5" style="text-align: center;">Bảng điểm môn  ${mon}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="5" style="text-align: center;">Năm học: ${namHoc}</th>
+                                </tr>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Họ tên</th>
+                                    <th>Lớp</th>
+                                    <th>Điểm trung bình HK1</th>
+                                    <th>Điểm trung bình HK2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+    
+                    data.forEach((student, index) => {
+                        tableHtml += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${student.ten_hoc_sinh}</td>
+                                <td>${lop}</td> <!-- Hiển thị tên lớp -->
+                                <td>${student.diem_hk1}</td>
+                                <td>${student.diem_hk2}</td>
+                            </tr>
+                        `;
+                    });
+    
+                    tableHtml += `</tbody></table>`;
+                    $('#avgScoresContainer').html(tableHtml);
+                } else {
+                    $('#avgScoresContainer').html('<p>Không có dữ liệu điểm trung bình.</p>');
+                }
+            },
+            error: function(err) {
+                console.log("Error:", err);
+                alert("Không thể lấy dữ liệu điểm trung bình.");
             }
         });
     });

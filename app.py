@@ -468,6 +468,80 @@ def save_student_grades():
     finally:
         cursor.close()
         connection.close()
+@app.route('/get-avg-scores', methods=['GET'])
+def get_avg_scores():
+    ten_lop = request.args.get('ten_lop')
+    ten_mh = request.args.get('ten_mh')
+    nam_hoc = request.args.get('nam_hoc')
+
+    if not (ten_lop and ten_mh and nam_hoc):
+        return jsonify({'error': 'Thiếu tham số!'}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Lấy mã lớp từ tên lớp
+        cursor.execute("SELECT MaLop FROM ds_lop WHERE TenLop = %s", (ten_lop,))
+        ma_lop = cursor.fetchone()
+        if not ma_lop:
+            return jsonify({'error': 'Không tìm thấy lớp!'}), 404
+
+        ma_lop = ma_lop['MaLop']
+
+        # Lấy danh sách học sinh trong lớp đó
+        cursor.execute("""
+            SELECT hs.MaHS, hs.FullName
+            FROM hoc_sinh hs
+            JOIN tham_gia_lop tgl ON hs.MaHS = tgl.ma_hoc_sinh
+            WHERE tgl.ma_lop = %s AND tgl.NamHoc = %s
+        """, (ma_lop, nam_hoc))
+        students = cursor.fetchall()
+
+        if not students:
+            return jsonify({'message': 'Không tìm thấy học sinh trong lớp!'}), 404
+
+        avg_scores = []
+
+        for student in students:
+            ma_hs = student['MaHS']
+            full_name = student['FullName']
+
+            # Lấy điểm của học sinh cho môn học đó ở cả 2 học kỳ
+            cursor.execute("""
+                SELECT 
+                    AVG(CASE WHEN HocKy = 1 THEN (bdc.SoDiem) ELSE NULL END) AS avg_hk1,
+                    AVG(CASE WHEN HocKy = 2 THEN (bdc.SoDiem) ELSE NULL END) AS avg_hk2
+                FROM bang_diem_chi_tiet bdc
+                JOIN bang_diem bd ON bdc.ma_bang_diem = bd.MaBD
+                JOIN mon_hoc mh ON bdc.ma_mon_hoc = mh.MaMH
+                WHERE bd.ma_hoc_sinh = %s AND mh.TenMH = %s
+            """, (ma_hs, ten_mh))
+
+            avg_result = cursor.fetchone()
+
+            # Tính toán điểm trung bình cho học kỳ 1 và học kỳ 2
+            avg_hk1 = avg_result['avg_hk1'] if avg_result['avg_hk1'] is not None else 0
+            avg_hk2 = avg_result['avg_hk2'] if avg_result['avg_hk2'] is not None else 0
+
+            avg_scores.append({
+                'ma_hoc_sinh': ma_hs,
+                'ten_hoc_sinh': full_name,
+                'diem_hk1': round(avg_hk1, 2),  # Làm tròn đến 2 chữ số thập phân
+                'diem_hk2': round(avg_hk2, 2)   # Làm tròn đến 2 chữ số thập phân
+            })
+
+        return jsonify(avg_scores)
+
+    except mysql.connector.Error as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Lỗi cơ sở dữ liệu!"}), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 
 
@@ -501,7 +575,7 @@ def show_summary_table():
     finally:
         cursor.close()
         connection.close()
-    
+   
 
 
 @app.route('/')
