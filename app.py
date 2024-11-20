@@ -248,63 +248,99 @@ def get_class():
     ### Point index xuất danh sách học sinh
 @app.route('/get-students', methods=['GET'])
 def get_students():
-    # Lấy tham số từ request
     ten_lop = request.args.get('ten_lop')
     ten_mh = request.args.get('ten_mh')
     hoc_ky = request.args.get('hoc_ky')
     nam_hoc = request.args.get('nam_hoc')
 
-    # Kiểm tra xem các tham số có hợp lệ không
     if not (ten_lop and ten_mh and hoc_ky and nam_hoc):
         return jsonify({'error': 'Thiếu tham số!'}), 400
+    # Kiểm tra học kỳ hợp lệ (chỉ có thể là 1 hoặc 2)
+    if hoc_ky not in ['1', '2']:
+        return jsonify({'error': 'Học kỳ không hợp lệ! Chỉ có thể là học kỳ 1 hoặc 2.'}), 400
 
     try:
-        # Kết nối đến cơ sở dữ liệu
         connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)  # Lấy kết quả dưới dạng dictionary
+        cursor = connection.cursor(dictionary=True)
 
-        # Gọi stored procedure 'TimThongTinHocSinh' với các tham số từ request
-        cursor.callproc('TimThongTinHocSinh', [ten_lop, ten_mh, nam_hoc, hoc_ky])
+        # Lấy danh sách lớp dựa trên TenLop
+        cursor.execute("SELECT MaLop FROM ds_lop WHERE TenLop = %s", (ten_lop,))
+        ma_lop = cursor.fetchone()
+        if not ma_lop:
+            return jsonify({'error': 'Không tìm thấy lớp!'}), 404
 
-        # Mảng để lưu kết quả thông báo
-        students = []
+        ma_lop = ma_lop['MaLop']
 
-        # Lấy kết quả trả về từ stored procedure
-        for result in cursor.stored_results():
-            # Mỗi result chứa dữ liệu trả về, như ma_hoc_sinh, ten_hoc_sinh
-            rows = result.fetchall()
+        # Lấy danh sách học sinh tham gia lớp
+        cursor.execute("""
+            SELECT hs.MaHS, hs.FullName, hs.NgaySinh, hs.SDT, hs.GioiTinh, hs.DiaChi, hs.Email
+            FROM hoc_sinh hs
+            JOIN tham_gia_lop tgl ON hs.MaHS = tgl.ma_hoc_sinh
+            WHERE tgl.ma_lop = %s AND tgl.NamHoc = %s
+        """, (ma_lop, nam_hoc))
+        students = cursor.fetchall()
 
-            # Duyệt qua từng học sinh trong kết quả trả về
-            for index, row in enumerate(rows):
-                # Đảm bảo các cột từ stored procedure khớp với tên trong mã
-                student = {
-                    "ma_hoc_sinh": row['ma_hoc_sinh'],
-                    "stt": index + 1,  # STT là chỉ số trong danh sách
-                    "ten_hoc_sinh": row['ten_hoc_sinh'],  # Tên học sinh
-                    "diem_15_phut": None,  # Điểm 15 phút (có thể cần lấy thêm từ bảng điểm nếu có)
-                    "diem_1_tiet": None,    # Điểm 1 tiết (có thể cần lấy thêm từ bảng điểm nếu có)
-                    "diem_thi": None,       # Điểm thi (có thể cần lấy thêm từ bảng điểm nếu có)
-                    
-                }                
+        if not students:
+            return jsonify({'message': 'Không tìm thấy học sinh trong lớp!'}), 404
 
-                
-                students.append(student)
+        updated_students = []
 
-        # Kiểm tra nếu có học sinh
-        if students:
-            return jsonify(students)
-        else:
-            return jsonify({'message': 'Không có dữ liệu phù hợp.'}), 404
+        for student in students:
+            ma_hs = student['MaHS']
+
+            # Kiểm tra học sinh đã có học kỳ trong bảng bang_diem chưa
+            cursor.execute("""
+                SELECT COUNT(*) AS count 
+                FROM bang_diem 
+                WHERE ma_hoc_sinh = %s AND HocKy = %s
+            """, (ma_hs, hoc_ky))
+            count = cursor.fetchone()['count']
+
+            # Nếu chưa có, thêm học kỳ mới vào bảng bang_diem
+            if count == 0:
+                cursor.execute("""
+                    INSERT INTO bang_diem (ma_hoc_sinh, HocKy)
+                    VALUES (%s, %s)
+                """, (ma_hs, hoc_ky))
+                connection.commit()
+
+            # Lấy điểm chi tiết cho học sinh này
+            cursor.execute("""
+                SELECT bdc.LoaiDiem, bdc.SoDiem, mh.TenMH 
+                FROM bang_diem_chi_tiet bdc
+                JOIN bang_diem bd ON bdc.ma_bang_diem = bd.MaBD
+                JOIN mon_hoc mh ON bdc.ma_mon_hoc = mh.MaMH
+                WHERE bd.ma_hoc_sinh = %s AND bd.HocKy = %s AND bdc.ma_mon_hoc = (
+                    SELECT MaMH FROM mon_hoc WHERE TenMH = %s
+                )
+            """, (ma_hs, hoc_ky, ten_mh))
+            diem_chi_tiet = cursor.fetchall()
+
+            # Chuẩn bị dữ liệu học sinh
+            student_data = {
+                "ma_hoc_sinh": ma_hs,
+                "ten_hoc_sinh": student['FullName'],
+                "ngay_sinh": student['NgaySinh'],
+                "sdt": student['SDT'],
+                "gioi_tinh": student['GioiTinh'],
+                "dia_chi": student['DiaChi'],
+                "email": student['Email'],
+                "diem_chi_tiet": diem_chi_tiet or []
+            }
+            updated_students.append(student_data)
+
+        return jsonify(updated_students)
 
     except mysql.connector.Error as e:
-        # Xử lý lỗi kết nối hoặc truy vấn
         print(f"Error: {e}")
-        return jsonify({"error": "Không thể lấy dữ liệu. Vui lòng kiểm tra lại!"}), 500
+        return jsonify({"error": "Lỗi cơ sở dữ liệu!"}), 500
 
     finally:
-        # Đảm bảo đóng kết nối và con trỏ sau khi sử dụng
-        cursor.close()
-        connection.close()
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
    ######## Lưu điểm sau khi xuất danh sách học sinh
 @app.route('/save-student-grades', methods=['POST'])
 def save_student_grades():
@@ -325,6 +361,17 @@ def save_student_grades():
             ten_mh = student.get('ten_mh')
             hoc_ky = student.get('hoc_ky')
 
+            # Lấy tên học sinh từ mã học sinh
+            cursor.execute("""
+                SELECT FullName FROM hoc_sinh WHERE MaHS = %s
+            """, (ma_hoc_sinh,))
+            student_name = cursor.fetchone()
+            
+            if student_name:
+                student_name = student_name['FullName']
+            else:
+                student_name = "Học sinh không tồn tại"
+            
             # Kiểm tra bảng điểm học sinh đã có chưa
             cursor.execute("""
                 SELECT MaBD FROM bang_diem 
@@ -361,6 +408,7 @@ def save_student_grades():
             else:
                 flash(f"Môn học {ten_mh} không tồn tại.", "error")
                 return jsonify({'error': f"Môn học {ten_mh} không tồn tại!"}), 400
+            
 
             # Kiểm tra số lượng điểm 15 phút cho môn học này
             if diem_15_phut:
@@ -370,7 +418,7 @@ def save_student_grades():
                 """, (ma_bang_diem, ma_mon_hoc))
                 existing_diem_15_phut = cursor.fetchone()['COUNT(*)']
                 if existing_diem_15_phut >= 5:
-                    return jsonify({'error': f"Học sinh đã có đủ 5 giá trị điểm 15 phút cho môn học {ten_mh}!"}), 400
+                    return jsonify({'error': f"Học sinh {student_name} đã có đủ 5 giá trị điểm 15 phút cho môn học {ten_mh}!"}), 400
 
             # Kiểm tra số lượng điểm 1 tiết cho môn học này
             if diem_1_tiet:
@@ -380,7 +428,7 @@ def save_student_grades():
                 """, (ma_bang_diem, ma_mon_hoc))
                 existing_diem_1_tiet = cursor.fetchone()['COUNT(*)']
                 if existing_diem_1_tiet >= 3:
-                    return jsonify({'error': f"Học sinh đã có đủ 3 giá trị điểm 1 tiết cho môn học {ten_mh}!"}), 400
+                    return jsonify({'error': f"Học sinh {student_name} đã có đủ 3 giá trị điểm 1 tiết cho môn học {ten_mh}!"}), 400
 
             # Kiểm tra số lượng điểm thi cho môn học này
             if diem_thi:
@@ -390,7 +438,7 @@ def save_student_grades():
                 """, (ma_bang_diem, ma_mon_hoc))
                 existing_diem_thi = cursor.fetchone()['COUNT(*)']
                 if existing_diem_thi >= 1:
-                    return jsonify({'error': f"Học sinh đã có đủ 1 giá trị điểm thi cho môn học {ten_mh}!"}), 400
+                    return jsonify({'error': f"Học sinh {student_name} đã có đủ 1 giá trị điểm thi cho môn học {ten_mh}!"}), 400
 
             # Thêm điểm vào bảng bang_diem_chi_tiet cho môn học này
             if diem_15_phut:

@@ -353,10 +353,7 @@ $(document).ready(function() {
 }); 
 
 
-<<<<<<< HEAD
 //Xử lý form tatistics
-=======
->>>>>>> cd2d18d66af0941499aba6a771deda853ee715ce
 $(document).ready(function () {
     $("#reportForm").on("submit", function (e) {
         e.preventDefault(); // Ngăn chặn hành động submit mặc định của form
