@@ -128,6 +128,73 @@ function fetchSuggestions(rowId) {
     }
 }
 
+function fetchAndDisplayClass(lop) {
+    if (!lop) {
+        alert("Vui lòng nhập tên lớp!");
+        return;
+    }
+
+    $.ajax({
+        url: '/get_class',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ lop: lop }),
+        success: function(response) {
+            console.log("Response from server: ", response); // Kiểm tra dữ liệu trả về
+
+            // Kiểm tra nếu dữ liệu hợp lệ
+            if (!response.data || response.data.length === 0) {
+                alert("Không có học sinh nào trong lớp này!");
+                return;
+            }
+
+            // Tạo bảng mới
+            const newTable = `
+                <table class="table table-bordered" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th colspan="5" style="text-align: center; width: 100%;">DANH SÁCH LỚP</th>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="width: 50%;">Lớp:
+                                <label>${response.lop}</label>
+                            </td>
+                            <td colspan="2" style="width: 50%;">Sĩ số:
+                                <span>${response.si_so}</span>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="text-align: center;">
+                            <td style="width: 5%;">STT</td>
+                            <td style="width: 30%;">Họ tên</td>
+                            <td style="width: 15%;">Giới tính</td>
+                            <td style="width: 20%;">Năm sinh</td>
+                            <td style="width: 30%;">Địa chỉ</td>
+                        </tr>
+                        ${response.data.map((student, index) => `
+                            <tr style="text-align: center;">
+                                <td style="width: 5%;">${index + 1}</td>
+                                <td style="width: 30%;">${student[0]}</td>
+                                <td style="width: 15%;">${student[1]}</td>
+                                <td style="width: 20%;">${student[2]}</td>
+                                <td style="width: 30%;">${student[3]}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            // Kiểm tra và cập nhật lại bảng nếu đã tồn tại
+            $('#tableContainer').html(newTable);
+        },
+        error: function(err) {
+            alert("Lỗi khi lấy dữ liệu lớp: " + (err.responseJSON?.error || "Không rõ lỗi"));
+        }
+    });
+}
+
+
 
 // Hàm để chọn sinh viên và cập nhật các thẻ label
 function selectStudent(rowId, item) {
@@ -173,7 +240,9 @@ function sendSelectedStudentsToServer() {
                     alert('Học sinh với STT ' + item.MaHS + ': ' + item.message);  // Hiển thị thông báo từ server
                     console.log("Response from server:", item.MaHS + ': ' + item.message);
 
-                });            },
+                });   
+                fetchAndDisplayClass(lop);         
+            },
             error: function(error) {
                 console.error("Error sending data:", error);
                 alert('Có lỗi khi gửi dữ liệu!');
@@ -240,6 +309,8 @@ $(document).ready(function() {
     });
 }); 
 
+
+//Xử lý form tatistics
 $(document).ready(function () {
     $("#reportForm").on("submit", function (e) {
         e.preventDefault(); // Ngăn chặn hành động submit mặc định của form
@@ -290,7 +361,9 @@ $(document).ready(function () {
         });
     });
 });
-    
+
+
+// Xử lý vẽ biểu đồ
 $(document).ready(function() {
     let chartInstance = null; // Biến lưu trữ biểu đồ để cập nhật lại khi có dữ liệu mới
 
@@ -380,6 +453,8 @@ $(document).ready(function() {
     });
 });
 
+
+// Xử lý trong form admin
 $(document).ready(function () {
     // Định nghĩa thông báo thành công
     const successMessage = "Cập nhật thành công!";

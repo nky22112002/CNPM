@@ -84,7 +84,7 @@ def save_settings(data):
         raise
 
 
-
+#Thêm học sinh mới
 @app.route('/submit', methods=['POST'])
 def submit():
     print("POST request received at /submit")  # In ra khi nhận được yêu cầu
@@ -197,7 +197,53 @@ def add_class_list():
         cursor.close()
         connection.close()
 
+# Hàm tính NamHoc
+def get_namhoc():
+    current_year = datetime.now().year
+    return f"{current_year}-{current_year + 1}"
 
+@app.route('/get_class', methods=['POST'])
+def get_class():
+    # Lấy NamHoc tự động
+    nam_hoc = get_namhoc()
+    
+    # Lấy dữ liệu từ frontend
+    ten_lop = request.json.get('lop', None)
+    
+    if not ten_lop:
+        return jsonify({'error': 'Tên lớp không hợp lệ'}), 400
+    
+    
+    # Kết nối đến cơ sở dữ liệu
+    connection = get_db_connection()
+    cursor = connection.cursor()    
+    # Thực thi câu lệnh SQL
+    query = """
+        SELECT hs.FullName, hs.GioiTinh, YEAR(hs.NgaySinh) AS NamSinh, hs.DiaChi
+        FROM tham_gia_lop tgl
+        JOIN ds_lop dl ON tgl.ma_lop = dl.MaLop
+        JOIN hoc_sinh hs ON tgl.ma_hoc_sinh = hs.MaHS
+        WHERE NamHoc = %s AND dl.TenLop = %s
+    """
+    cursor.execute(query, (nam_hoc, ten_lop))
+    results = cursor.fetchall()
+    
+    # Đóng kết nối
+    cursor.close()
+    connection.close()
+    # Chuyển kết quả thành JSON
+    data = [
+        {'FullName': row[0], 'GioiTinh': row[1], 'NamSinh': row[2], 'DiaChi': row[3]}
+        for row in results
+    ]
+
+    print("results: ", results  )
+    # Chuẩn bị dữ liệu trả về
+    return jsonify({
+        'lop': ten_lop,
+        'si_so': len(results),
+        'data': results
+    })
 
     ### Point index xuất danh sách học sinh
 @app.route('/get-students', methods=['GET'])
@@ -293,6 +339,8 @@ def show_summary_table():
         cursor.close()
         connection.close()
     
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
