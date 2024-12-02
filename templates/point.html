@@ -7,7 +7,7 @@
             <thead>
                 <!-- Hàng đầu tiên với một ô chiếm toàn bộ chiều rộng -->
                 <tr>
-                    <th colspan="5" style="text-align: center; width: 100%;">DANH SÁCH LỚP</th>
+                    <th colspan="5" style="text-align: center; width: 100%;">Bảng điểm môn học</th>
                 </tr>
                 <!-- Hàng thứ hai với hai ô chia 50% mỗi ô -->
                 <tr>
@@ -42,9 +42,13 @@
         </table>
         <button type="button" id="fetchDataBtn">Lấy danh sách học sinh</button>
         <button type="button" id="saveScoresBtn">Lưu điểm</button>
-        
+        <button type="button" id="fetchAvgScoresBtn">Lấy bảng điểm trung bình</button>
     </div>
     </form>
+
+    <!-- Thẻ div để chứa bảng điểm sau khi lưu -->
+    <div id="avgScoresContainer"></div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/static/js/script.js"></script>
 
