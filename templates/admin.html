@@ -3,7 +3,7 @@
 {% block content %}
     <!-- Navigation Bar -->
     <div>
-        <h1>CHỈNH SỬA</h1>
+        <h1>CHỈNH SỬA QUY ĐỊNH</h1>
         <div>
             <h4>Độ tuổi:</h4>
             <input id="minAge" placeholder="Min age"/>
@@ -18,7 +18,40 @@
         
         
     </div>
+<!-- Form Thêm Môn Học -->
+<div>
+    <h1>QUẢN LÍ MÔN HỌC</h1>
+    <h4>Thêm môn học:</h4>
+    <input id="maMonHoc" placeholder="Mã môn học" />
+    <input id="tenMonHoc" placeholder="Tên môn học" />
+    <button type="button" id="addSubjectBtn">Thêm môn học</button>
+</div>
 
+<!-- Tìm kiếm Môn Học -->
+<div class="mt-3">
+    <h4>Tìm kiếm môn học:</h4>
+    <input id="searchKeyword" placeholder="Từ khóa tìm kiếm" />
+    <button type="button" id="searchSubjectBtn">Tìm kiếm</button>
+</div>
+
+<!-- Danh sách Môn Học -->
+<div class="mt-3">
+    <h4>Danh sách môn học:</h4>
+    <table id="subjectsTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Mã môn học</th>
+                <th>Tên môn học</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dữ liệu sẽ được thêm vào đây thông qua JavaScript -->
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
     
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

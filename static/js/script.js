@@ -77,15 +77,14 @@ $(document).ready(function() {
 // Hàm fetchSuggestions() sửa đổi để thêm kết quả vào nav
 function fetchSuggestions(rowId) {
     const query = $(`#nameInput_${rowId}`).val();  // Lấy giá trị từ ô input
-    console.log("Query:", query);  // Kiểm tra giá trị query
-
+    
     if (query && query.length > 0) {
         $.ajax({
             url: '/search_student',  // Kiểm tra đường dẫn API
             method: 'GET',
             data: { query: query },
             success: function(data) {
-                console.log("Received suggestions:", data);  // Kiểm tra kết quả từ API
+                
 
                 let searchResults = $('#searchResults');
                 searchResults.empty();  // Xóa các kết quả cũ
@@ -617,7 +616,127 @@ $(document).ready(function () {
         updateSettings({ name: "classSize", value: parseInt(classSize) });
     });
 });
+// Quản lí môn học
 
+$(document).ready(function () {
+    // Thêm môn học
+    $("#addSubjectBtn").click(function () {
+        const maMH = $("#maMonHoc").val();
+        const tenMH = $("#tenMonHoc").val();
+
+        if (!maMH || !tenMH) {
+            alert("Vui lòng nhập đầy đủ thông tin môn học!");
+            return;
+        }
+
+        $.ajax({
+            url: "/subjects",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ MaMH: maMH, TenMH: tenMH }),
+            success: function () {
+                alert("Thêm môn học thành công!");
+                location.reload();
+            },
+            error: function (xhr) {
+                alert("Lỗi: " + xhr.responseText);
+            },
+        });
+    });
+    // Tìm kiếm môn học
+    $("#searchSubjectBtn").click(function () {
+        const keyword = $("#searchKeyword").val();
+
+        if (!keyword) {
+            alert("Vui lòng nhập từ khóa tìm kiếm!");
+            return;
+        }
+
+        $.ajax({
+            url: `/subjects/search?keyword=${keyword}`,
+            type: "GET",
+            data: {keyword: keyword},
+            success: function (response) {
+                const tableBody = $("#subjectsTable tbody");
+                tableBody.empty(); // Xóa dữ liệu cũ
+
+                if (response.length === 0) {
+                    alert("Không tìm thấy môn học nào!");
+                    return;
+                }
+
+                // Hiển thị dữ liệu tìm kiếm
+                response.forEach((subject) => {
+                    const maMH = subject.MaMH || "Không xác định";
+                    const tenMH = subject.TenMH || "Không xác định";
+
+                    tableBody.append(`
+                        <tr>
+                            <td><input type="text" class="form-control maMonHocInput" value="${maMH}" disabled /></td>
+                            <td><input type="text" class="form-control tenMonHocInput" value="${tenMH}" /></td>
+                            <td>
+                                <button class="btn btn-primary updateSubjectBtn" data-id="${maMH}">Cập nhật</button>
+                                <button class="btn btn-danger deleteSubjectBtn" data-id="${maMH}">Xóa</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                // Thêm sự kiện Xóa
+                // Xóa môn học
+    $(".deleteSubjectBtn").click(function () {
+        const maMH = $(this).data("id");
+
+        if (confirm("Bạn có chắc chắn muốn xóa môn học này?")) {
+            $.ajax({
+                url: `/subjects/${maMH}`,
+                type: "DELETE",
+                success: function (response) {
+                    alert(response.message); // Hiển thị thông báo xóa thành công
+                    location.reload(); // Tải lại trang sau khi xóa thành công
+                },
+                error: function (xhr) {
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        alert("Lỗi: " + xhr.responseJSON.message); // Hiển thị thông báo lỗi nếu không thể xóa
+                    } else {
+                        alert("Đã xảy ra lỗi không xác định!"); // Lỗi chung nếu không có thông báo cụ thể
+                    }
+                },
+            });
+        }
+    });
+                // Thêm sự kiện Cập nhật
+                $(".updateSubjectBtn").click(function () {
+                    const row = $(this).closest("tr");
+                    const maMH = row.find(".maMonHocInput").val();
+                    const tenMH = row.find(".tenMonHocInput").val();
+
+                    if (!tenMH) {
+                        alert("Tên môn học không được để trống!");
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "/subjects",
+                        type: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify({ MaMH: maMH, TenMH: tenMH }),
+                        success: function () {
+                            alert("Cập nhật môn học thành công!");
+                            location.reload();
+                        },
+                        error: function (xhr) {
+                            alert("Lỗi: " + xhr.responseText);
+                        },
+                    });
+                });
+            },
+            error: function (xhr) {
+                alert("Lỗi: " + xhr.responseText);
+            },
+        });
+    });
+});
 
 
 

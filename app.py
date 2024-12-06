@@ -575,7 +575,127 @@ def show_summary_table():
     finally:
         cursor.close()
         connection.close()
-   
+## Thêm môn học mới
+@app.route('/subjects', methods=['POST'])
+def add_subject():
+    print("POST request received at /subjects")  # Debug log
+
+    # Lấy dữ liệu từ request
+    data = request.get_json()
+    ma_mon_hoc = data.get('MaMH')
+    ten_mon_hoc = data.get('TenMH')
+
+    # Kiểm tra dữ liệu đầu vào
+    if not ma_mon_hoc or not ten_mon_hoc:
+        return "Vui lòng cung cấp đầy đủ thông tin!", 400
+
+    # Kết nối tới cơ sở dữ liệu
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Câu lệnh INSERT
+    query = "INSERT INTO mon_hoc (MaMH, TenMH) VALUES (%s, %s)"
+    values = (ma_mon_hoc, ten_mon_hoc)
+
+    try:
+        cursor.execute(query, values)
+        conn.commit()
+        return "Thêm môn học thành công!", 200
+    except Exception as e:
+        conn.rollback()
+        return str(e), 500
+    finally:
+        cursor.close()
+        conn.close()
+#### XÓa môn học
+@app.route('/subjects/<int:maMH>', methods=['DELETE'])
+def delete_subject(maMH):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Kiểm tra xem môn học có trong bảng bang_diem_chi_tiet không
+    check_query = "SELECT COUNT(*) FROM bang_diem_chi_tiet WHERE ma_mon_hoc = %s"
+    cursor.execute(check_query, (maMH,))
+    result = cursor.fetchone()
+
+    # Nếu môn học đã có điểm, không cho phép xóa
+    if result[0] > 0:
+        # Lấy tên môn học từ bảng mon_hoc
+        name_query = "SELECT TenMH FROM mon_hoc WHERE MaMH = %s"
+        cursor.execute(name_query, (maMH,))
+        subject_name = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"message": f"Không thể xóa môn học '{subject_name}' vì đã có điểm!"}), 400  # Trả về thông báo cụ thể về môn học
+
+    # Nếu môn học không có điểm, tiến hành xóa
+    delete_query = "DELETE FROM mon_hoc WHERE MaMH = %s"
+    cursor.execute(delete_query, (maMH,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Môn học đã được xóa thành công!"}), 200
+
+##### Cập nhập môn học
+@app.route('/subjects', methods=['PUT'])
+def update_subject():
+    print("PUT request received at /subjects")  # Debug log
+
+    # Lấy dữ liệu từ request
+    data = request.get_json()
+    ma_mon_hoc = data.get('MaMH')
+    ten_mon_hoc = data.get('TenMH')
+
+    # Kiểm tra dữ liệu đầu vào
+    if not ma_mon_hoc or not ten_mon_hoc:
+        return "Vui lòng cung cấp đầy đủ thông tin!", 400
+
+    # Kết nối tới cơ sở dữ liệu
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Câu lệnh UPDATE
+    query = "UPDATE mon_hoc SET TenMH = %s WHERE MaMH = %s"
+    values = (ten_mon_hoc, ma_mon_hoc)
+
+    try:
+        cursor.execute(query, values)
+        if cursor.rowcount == 0:
+            return "Môn học không tồn tại!", 404
+        conn.commit()
+        return "Cập nhật môn học thành công!", 200
+    except Exception as e:
+        conn.rollback()
+        return str(e), 500
+    finally:
+        cursor.close()
+        conn.close()
+######## Tìm kiếm môn học
+@app.route('/subjects/search', methods=['GET'])
+def search_subject():
+    keyword = request.args.get('keyword', '')
+    
+    if not keyword:
+    
+        return jsonify([]), 400  # Trả về mảng rỗng nếu không có từ khóa tìm kiếm
+
+    # Kết nối cơ sở dữ liệu và thực hiện truy vấn
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT MaMH, TenMH FROM mon_hoc WHERE TenMH LIKE %s"
+    cursor.execute(query, ('%' + keyword + '%',))  # Sử dụng LIKE để tìm kiếm tên môn học
+
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Trả về kết quả tìm kiếm dưới dạng JSON
+    return jsonify([{"MaMH": row[0], "TenMH": row[1]} for row in results])
+
 
 
 @app.route('/')
