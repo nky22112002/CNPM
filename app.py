@@ -697,25 +697,23 @@ def update_subject():
 ######## Tìm kiếm môn học
 @app.route('/subjects/search', methods=['GET'])
 def search_subject():
-    keyword = request.args.get('keyword', '')
-    
-    if not keyword:
-    
-        return jsonify([]), 400  # Trả về mảng rỗng nếu không có từ khóa tìm kiếm
-
-    # Kết nối cơ sở dữ liệu và thực hiện truy vấn
+    query = request.args.get('keyword')
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    query = "SELECT MaMH, TenMH FROM mon_hoc WHERE TenMH LIKE %s"
-    cursor.execute(query, ('%' + keyword + '%',))  # Sử dụng LIKE để tìm kiếm tên môn học
-
-    results = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    # Trả về kết quả tìm kiếm dưới dạng JSON
-    return jsonify([{"MaMH": row[0], "TenMH": row[1]} for row in results])
+    
+    if query:
+        # Tìm kiếm dữ liệu trong cơ sở dữ liệu
+        cursor.execute("""
+            SELECT MaMH, TenMH
+            FROM mon_hoc
+            WHERE TenMH LIKE %s
+        """, (f"%{query}%",))
+        results = cursor.fetchall()
+        
+        # Trả về kết quả dưới dạng JSON
+        return jsonify(results)
+    else:
+        return jsonify([])
 
 
 

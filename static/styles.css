@@ -13,7 +13,18 @@
     display: none; /* Ẩn nav ban đầu */
     overflow: auto; /* Thêm thanh cuộn khi nội dung vượt quá chiều cao hoặc chiều rộng */
 }
-
+#searchSub {
+    position: absolute; /* Đảm bảo nav nổi lên và không ảnh hưởng đến layout */
+    top: 0; /* Vị trí sẽ được tính từ thẻ input bằng JS */
+    left: 0; /* Căn chỉnh theo chiều ngang */
+    width: 100%; /* Chiều rộng của nav bằng với chiều rộng của input */
+    background-color: white; /* Màu nền cho nav */
+    border: 1px solid #ccc; /* Đường viền nhẹ */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng */
+    z-index: 1000; /* Đảm bảo nav nổi lên trên các phần tử khác */
+    display: none; /* Ẩn nav ban đầu */
+    overflow: auto; /* Thêm thanh cuộn khi nội dung vượt quá chiều cao hoặc chiều rộng */
+}
 .navbar-nav {
     list-style-type: none;
     margin: 0;

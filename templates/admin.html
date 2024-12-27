@@ -30,10 +30,16 @@
 <!-- Tìm kiếm Môn Học -->
 <div class="mt-3">
     <h4>Tìm kiếm môn học:</h4>
-    <input id="searchKeyword" placeholder="Từ khóa tìm kiếm" />
+    <input id="searchKeyword" placeholder="Từ khóa tìm kiếm" onkeyup="searchSubject()"/>
     <button type="button" id="searchSubjectBtn">Tìm kiếm</button>
 </div>
-
+<nav id="searchSub" class="navbar navbar-light" style="display:none;">
+    <ul class="container" style="list-style: none; display: block; cursor: pointer;">
+        <li id="searchSubItem">
+            <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
+        </li>
+    </ul>
+</nav>
 <!-- Danh sách Môn Học -->
 <div class="mt-3">
     <h4>Danh sách môn học:</h4>

@@ -702,6 +702,7 @@ $(document).ready(function () {
             },
         });
     });
+    
     // Tìm kiếm môn học
     $("#searchSubjectBtn").click(function () {
         const keyword = $("#searchKeyword").val();
@@ -712,10 +713,12 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: `/subjects/search?keyword=${keyword}`,
+            url: `/subjects/search`,
             type: "GET",
             data: {keyword: keyword},
             success: function (response) {
+                let searchSubs = $('#searchKeyword');
+
                 const tableBody = $("#subjectsTable tbody");
                 tableBody.empty(); // Xóa dữ liệu cũ
 
@@ -724,18 +727,18 @@ $(document).ready(function () {
                     return;
                 }
 
-                // Hiển thị dữ liệu tìm kiếm
+                        // Hiển thị dữ liệu tìm kiếm
                 response.forEach((subject) => {
                     const maMH = subject.MaMH || "Không xác định";
                     const tenMH = subject.TenMH || "Không xác định";
-
+                    console.log("response: ", subject);
                     tableBody.append(`
                         <tr>
-                            <td><input type="text" class="form-control maMonHocInput" value="${maMH}" disabled /></td>
-                            <td><input type="text" class="form-control tenMonHocInput" value="${tenMH}" /></td>
+                            <td><input type="text" class="form-control maMonHocInput" value="${subject[0]}" disabled /></td>
+                            <td><input type="text" class="form-control tenMonHocInput" value="${subject[1]}" /></td>
                             <td>
-                                <button class="btn btn-primary updateSubjectBtn" data-id="${maMH}">Cập nhật</button>
-                                <button class="btn btn-danger deleteSubjectBtn" data-id="${maMH}">Xóa</button>
+                                <button class="btn btn-primary updateSubjectBtn" data-id="${subject[0]}">Cập nhật</button>
+                                <button class="btn btn-danger deleteSubjectBtn" data-id="${subject[0]}">Xóa</button>
                             </td>
                         </tr>
                     `);
@@ -796,6 +799,63 @@ $(document).ready(function () {
         });
     });
 });
+let selectSubjects = [];
+
+function selectSub(rowId, item) {
+    const subId = item[0];  // Mã sinh viên
+    const existingSubId = selectSubjects[rowId - 1]; // Lấy giá trị sinh viên hiện tại của rowId
+
+    // Nếu có giá trị sinh viên cũ, xóa nó khỏi mảng trước khi thêm giá trị mới
+    if (existingSubId) {
+        const index = selectSubjects.indexOf(existingSubId);
+        if (index !== -1) {
+            selectSubjects.splice(index, 1);  // Xóa giá trị sinh viên cũ
+        }
+    }
+
+    // Thêm mã sinh viên mới vào mảng cho rowId
+    selectSubjects[rowId - 1] = subId;
+    $(`#searchKeyword`).val(item[1]); // Cập nhật tên vào ô input
+    
+
+    // Ẩn nav sau khi chọn
+    $('#searchSub').hide();
+}
+// Tìm kiếm môn học
+function searchSubject () {
+    const keyword = $("#searchKeyword").val();
+
+    if (!keyword) {
+        alert("Vui lòng nhập từ khóa tìm kiếm!");
+        return;
+    }
+
+    $.ajax({
+        url: `/subjects/search`,
+        type: "GET",
+        data: {keyword: keyword},
+        success: function (response) {
+            let searchSubs = $('#searchSubItem');
+            searchSubs.empty();
+            if (response.length === 0) {
+                alert("Không tìm thấy môn học nào!");
+                return;
+            }
+
+            response.forEach((item, index) => {
+                let li = $(`<li class="searchSub">${item[1]}</li>`);  // item[0] là FullName nếu dữ liệu trả về là mảng con
+                li.click(function() {
+                    selectSub(index, item);  // Hàm chọn sinh viên
+                });
+
+                searchSubs.append(li);
+            });       
+                     // Hiển thị dữ liệu tìm kiếm
+            $('#searchSub').show();
+            
+        }
+    })
+}
 
 
 
