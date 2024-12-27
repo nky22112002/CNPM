@@ -261,37 +261,74 @@ $('#addClassBtn').on('click', function() {
 $(document).ready(function() {
     $('#fetchDataBtn').click(function() {
         // Lấy giá trị từ các ô input
-        let lop = $('input[name="ten-lop"]').val();
-        let mon = $('input[name="ten-mh"]').val();
-        let hocKy = $('input[name="hoc-ky"]').val();
-        let namHoc = $('input[name="nam-hoc"]').val();
+        let lop = $('input[name="ten-lop"]');
+        let mon = $('input[name="ten-mh"]');
+        let hocKy = $('input[name="hoc-ky"]');
+        let namHoc = $('input[name="nam-hoc"]');
 
-        // Gửi yêu cầu AJAX đến Flask để gọi Stored Procedure
+        // Biến kiểm tra lỗi
+        let hasError = false;
+
+        // Xóa các thông báo lỗi cũ
+        $('.error-message').remove();
+
+        // Kiểm tra từng ô input và thêm thông báo lỗi nếu thiếu
+        if (!lop.val()) {
+            lop.after('<span class="error-message" style="color: red; font-size: 12px;">Vui lòng nhập tên lớp!</span>');
+            hasError = true;
+        }
+        if (!mon.val()) {
+            mon.after('<span class="error-message" style="color: red; font-size: 12px;">Vui lòng nhập tên môn học!</span>');
+            hasError = true;
+        }
+        if (!hocKy.val()) {
+            hocKy.after('<span class="error-message" style="color: red; font-size: 12px;">Vui lòng nhập học kỳ!</span>');
+            hasError = true;
+        }
+        if (!namHoc.val()) {
+            namHoc.after('<span class="error-message" style="color: red; font-size: 12px;">Vui lòng nhập năm học!</span>');
+            hasError = true;
+        }
+
+        // Dừng việc gửi yêu cầu nếu có lỗi
+        if (hasError) {
+            return;
+        }
+
+        // Gửi yêu cầu AJAX đến Flask
         $.ajax({
             url: '/get-students',
             type: 'GET',
-            data: { ten_lop: lop, ten_mh: mon, hoc_ky: hocKy, nam_hoc: namHoc },
+            data: {
+                ten_lop: lop.val(),
+                ten_mh: mon.val(),
+                hoc_ky: hocKy.val(),
+                nam_hoc: namHoc.val()
+            },
             success: function(data) {
                 // Xóa các hàng cũ trong bảng (nếu có)
-                $('#studentTableBody').find("tr:gt(0)").remove();
+                $('#studentTableBody').empty();
 
-                
-
-                // Kiểm tra và hiển thị dữ liệu từ Stored Procedure
-                if (data && data.length > 0) {
+                // Kiểm tra và hiển thị dữ liệu
+                if (data && Array.isArray(data) && data.length > 0) {
                     data.forEach((row, index) => {
+                        // Hiển thị điểm chi tiết (nếu có)
+                        let diem15Phut = row.diem_chi_tiet.find(diem => diem.LoaiDiem === '15phut')?.SoDiem || '';
+                        let diem1Tiet = row.diem_chi_tiet.find(diem => diem.LoaiDiem === '1tiet')?.SoDiem || '';
+                        let diemThi = row.diem_chi_tiet.find(diem => diem.LoaiDiem === 'null')?.SoDiem || '';
+
                         $('#studentTableBody').append(`
-                             <tr style="text-align: center;">
+                            <tr style="text-align: center;">
                                 <td style="width: 5%;">${index + 1}</td>
                                 <td style="width: 30%;">${row.ten_hoc_sinh}</td>
                                 <td style="width: 15%;">
-                                    <input type="text" class="diem-15phut" data-id="${row.ma_hoc_sinh}" value="${row.diem_15_phut || ''}" placeholder="" />
+                                    <input type="text" class="diem-15phut" data-id="${row.ma_hoc_sinh}" value="${diem15Phut}" placeholder="Điểm 15 phút" />
                                 </td>
                                 <td style="width: 20%;">
-                                    <input type="text" class="diem-1tiet" data-id="${row.ma_hoc_sinh}" value="${row.diem_1_tiet || ''}" placeholder="" />
+                                    <input type="text" class="diem-1tiet" data-id="${row.ma_hoc_sinh}" value="${diem1Tiet}" placeholder="Điểm 1 tiết" />
                                 </td>
                                 <td style="width: 30%;">
-                                    <input type="text" class="diem-thi" data-id="${row.ma_hoc_sinh}" value="${row.diem_thi || ''}" placeholder="" />
+                                    <input type="text" class="diem-thi" data-id="${row.ma_hoc_sinh}" value="${diemThi}" placeholder="Điểm thi" />
                                 </td>
                             </tr>
                         `);
@@ -300,32 +337,53 @@ $(document).ready(function() {
                     $('#studentTableBody').append('<tr><td colspan="5" style="text-align: center;">Không có dữ liệu</td></tr>');
                 }
             },
-            error: function(err) {
-                console.log("Error:", err);
-                alert("Không thể lấy dữ liệu. Vui lòng kiểm tra lại!");
+            error: function(xhr) {
+                let errorMessage = "Không thể lấy dữ liệu. Vui lòng kiểm tra lại!";
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error; // Lỗi cụ thể từ server
+                }
+                console.log("Error:", xhr);
+                alert(errorMessage);
             }
         });
     });
+
+
     // Lưu điểm cho học sinh trong danh sách được tìm 
     $('#saveScoresBtn').click(function () {
         let students = [];
+        let hasError = false; // Cờ để kiểm tra lỗi
+    
         $('#studentTableBody tr').each(function () {
             const maHocSinh = $(this).find('input.diem-15phut').data('id');
-            const diem15Phut = $(this).find('input.diem-15phut').val();
-            const diem1Tiet = $(this).find('input.diem-1tiet').val();
-            const diemThi = $(this).find('input.diem-thi').val();
+            const diem15Phut = parseFloat($(this).find('input.diem-15phut').val());
+            const diem1Tiet = parseFloat($(this).find('input.diem-1tiet').val());
+            const diemThi = parseFloat($(this).find('input.diem-thi').val());
+    
+            // Kiểm tra giá trị điểm nhập vào
+            if ((diem15Phut && (diem15Phut < 0 || diem15Phut > 10)) || 
+                (diem1Tiet && (diem1Tiet < 0 || diem1Tiet > 10)) || 
+                (diemThi && (diemThi < 0 || diemThi > 10))) {
+                alert('Điểm phải nằm trong khoảng từ 0 đến 10!');
+                hasError = true; // Đặt cờ lỗi
+                return false; // Thoát khỏi vòng lặp .each
+            }
     
             if (maHocSinh) {
                 students.push({
                     ma_hoc_sinh: maHocSinh,
                     ten_mh: $('input[name="ten-mh"]').val(),
                     hoc_ky: $('input[name="hoc-ky"]').val(),
-                    diem_15_phut: diem15Phut,
-                    diem_1_tiet: diem1Tiet,
-                    diem_thi: diemThi
+                    diem_15_phut: diem15Phut || null, // Gửi null nếu không nhập
+                    diem_1_tiet: diem1Tiet || null,
+                    diem_thi: diemThi || null
                 });
             }
         });
+    
+        if (hasError) {
+            return; // Dừng thực hiện nếu có lỗi
+        }
     
         $.ajax({
             url: '/save-student-grades',
@@ -341,14 +399,15 @@ $(document).ready(function() {
                 let errorMessage = "Đã xảy ra lỗi trong quá trình lưu điểm!";
                 
                 if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage = xhr.responseJSON.error;  // Lấy thông báo lỗi từ server
+                    errorMessage = xhr.responseJSON.error; // Lấy thông báo lỗi từ server
                 }
     
                 console.error("Error:", errorMessage);
-                alert(errorMessage);  // Hiển thị thông báo lỗi cụ thể
+                alert(errorMessage); // Hiển thị thông báo lỗi cụ thể
             }
         });
     });
+    
     $('#fetchAvgScoresBtn').click(function() {
         // Lấy giá trị từ các ô input
         let lop = $('input[name="ten-lop"]').val();

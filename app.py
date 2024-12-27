@@ -263,6 +263,20 @@ def get_students():
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
 
+         # Kiểm tra năm học hợp lệ
+        cursor.execute("SELECT DISTINCT NamHoc FROM tham_gia_lop")
+        valid_years = [row['NamHoc'] for row in cursor.fetchall()]
+        if nam_hoc not in valid_years:
+            return jsonify({'error': f'Năm học không hợp lệ! Các năm hợp lệ là: {", ".join(valid_years)}'}), 400
+        
+        # Kiểm tra môn học hợp lệ
+        cursor.execute("SELECT MaMH FROM mon_hoc WHERE TenMH = %s", (ten_mh,))
+        ma_mon_hoc = cursor.fetchone()
+        if not ma_mon_hoc:
+            return jsonify({'error': 'Không tìm thấy môn học!'}), 404
+
+        ma_mon_hoc = ma_mon_hoc['MaMH']
+        
         # Lấy danh sách lớp dựa trên TenLop
         cursor.execute("SELECT MaLop FROM ds_lop WHERE TenLop = %s", (ten_lop,))
         ma_lop = cursor.fetchone()
@@ -361,6 +375,12 @@ def save_student_grades():
             ten_mh = student.get('ten_mh')
             hoc_ky = student.get('hoc_ky')
 
+            # Kiểm tra giá trị điểm trong khoảng 0 đến 10
+            if (diem_15_phut is not None and (diem_15_phut < 0 or diem_15_phut > 10)) or \
+               (diem_1_tiet is not None and (diem_1_tiet < 0 or diem_1_tiet > 10)) or \
+               (diem_thi is not None and (diem_thi < 0 or diem_thi > 10)):
+                return jsonify({'error': f"Điểm của học sinh có mã {ma_hoc_sinh} phải nằm trong khoảng từ 0 đến 10!"}), 400
+
             # Lấy tên học sinh từ mã học sinh
             cursor.execute("""
                 SELECT FullName FROM hoc_sinh WHERE MaHS = %s
@@ -409,7 +429,6 @@ def save_student_grades():
                 flash(f"Môn học {ten_mh} không tồn tại.", "error")
                 return jsonify({'error': f"Môn học {ten_mh} không tồn tại!"}), 400
             
-
             # Kiểm tra số lượng điểm 15 phút cho môn học này
             if diem_15_phut:
                 cursor.execute("""
@@ -468,6 +487,8 @@ def save_student_grades():
     finally:
         cursor.close()
         connection.close()
+
+## Xuất điểm trung bình
 @app.route('/get-avg-scores', methods=['GET'])
 def get_avg_scores():
     ten_lop = request.args.get('ten_lop')
