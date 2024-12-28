@@ -614,12 +614,22 @@ def add_subject():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Câu lệnh INSERT
-    query = "INSERT INTO mon_hoc (MaMH, TenMH) VALUES (%s, %s)"
-    values = (ma_mon_hoc, ten_mon_hoc)
-
     try:
-        cursor.execute(query, values)
+        # Kiểm tra xem mã môn học hoặc tên môn học đã tồn tại chưa
+        check_query = """
+            SELECT COUNT(*) 
+            FROM mon_hoc 
+            WHERE MaMH = %s OR TenMH = %s
+        """
+        cursor.execute(check_query, (ma_mon_hoc, ten_mon_hoc))
+        result = cursor.fetchone()
+
+        if result[0] > 0:
+            return "Mã môn học hoặc tên môn học đã tồn tại!", 400
+
+        # Nếu không tồn tại, thêm mới vào cơ sở dữ liệu
+        insert_query = "INSERT INTO mon_hoc (MaMH, TenMH) VALUES (%s, %s)"
+        cursor.execute(insert_query, (ma_mon_hoc, ten_mon_hoc))
         conn.commit()
         return "Thêm môn học thành công!", 200
     except Exception as e:
@@ -628,6 +638,7 @@ def add_subject():
     finally:
         cursor.close()
         conn.close()
+
 #### XÓa môn học
 @app.route('/subjects/<int:maMH>', methods=['DELETE'])
 def delete_subject(maMH):
