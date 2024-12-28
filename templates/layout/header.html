@@ -18,58 +18,7 @@
   </div>
 </nav>
 
-<!-- Modal Đăng Nhập -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="loginModalLabel">Login</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form method="POST" action="login.php">
-          <div class="mb-3">
-            <label for="usernameLogin" class="form-label">Username</label>
-            <input type="text" class="form-control" id="usernameLogin" name="username" placeholder="Enter your username" required>
-          </div>
-          <div class="mb-3">
-            <label for="passwordLogin" class="form-label">Password</label>
-            <input type="password" class="form-control" id="passwordLogin" name="password" placeholder="Enter your password" required>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Login</button>
-        </form>
-        <div class="text-center mt-3">
-          <button class="btn btn-link" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#registerModal">Create an Account</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Modal Đăng Ký -->
-<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="registerModalLabel">Register</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form method="POST" action="register.php">
-          <div class="mb-3">
-            <label for="usernameRegister" class="form-label">Username</label>
-            <input type="text" class="form-control" id="usernameRegister" name="username" placeholder="Choose a username" required>
-          </div>
-          <div class="mb-3">
-            <label for="passwordRegister" class="form-label">Password</label>
-            <input type="password" class="form-control" id="passwordRegister" name="password" placeholder="Choose a password" required>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Register</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 <!-- Bootstrap CSS and JS (make sure you include these in your project) -->
