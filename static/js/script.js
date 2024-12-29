@@ -856,6 +856,41 @@ function searchSubject () {
         }
     })
 }
+// Đăng ký
+document.getElementById("registerForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const loginName = document.getElementById("loginName").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const role = document.getElementById("role").value;
+
+    // Gửi yêu cầu POST tới API đăng ký
+    fetch('/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            loginName: loginName,
+            email: email,
+            password: password,
+            confirmPassword: confirmPassword,
+            role: role
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.message === "Đăng ký thành công!") {
+            // Đóng modal nếu đăng ký thành công
+            $('#registerModal').modal('hide');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+// Đăng nhập
 
 
 

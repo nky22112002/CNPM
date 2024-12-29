@@ -726,7 +726,72 @@ def search_subject():
     else:
         return jsonify([])
 
+## Đăng ký tài khoản
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
 
+    loginName = data.get('loginName')
+    email = data.get('email')
+    password = data.get('password')
+    confirmPassword = data.get('confirmPassword')
+    role = data.get('role')
+
+    # Kiểm tra mật khẩu xác nhận có giống mật khẩu không
+    if password != confirmPassword:
+        return jsonify({"message": "Mật khẩu xác nhận không khớp!"}), 400
+
+    # Kiểm tra dữ liệu đầu vào
+    if not loginName or not email or not password or not role:
+        return jsonify({"message": "Vui lòng cung cấp đầy đủ thông tin!"}), 400
+
+    # Kết nối tới cơ sở dữ liệu và thực hiện lưu trữ
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Thêm tài khoản vào cơ sở dữ liệu
+    query = """
+    INSERT INTO account (loginName, Email, password, Role)
+    VALUES (%s, %s, %s, %s)
+    """
+    values = (loginName, email, password, role)
+
+    try:
+        cursor.execute(query, values)
+        conn.commit()
+        return jsonify({"message": "Đăng ký thành công!"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"Đã có lỗi xảy ra: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+## Đăng nhập
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    login_name = data.get('loginName')
+    password = data.get('password')
+
+    if not login_name or not password:
+        return jsonify({"message": "Vui lòng nhập tên đăng nhập và mật khẩu!"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM account WHERE loginName = %s AND password = %s", (login_name, password))
+    user = cursor.fetchone()
+
+    if user:
+        role = user['Role']
+        login_name = user['loginName']
+        return jsonify({
+            "message": "Đăng nhập thành công!",
+            "role": role,
+            "loginName": login_name
+        })
+    else:
+        return jsonify({"message": "Sai tên đăng nhập hoặc mật khẩu!"}), 401
 
 
 
