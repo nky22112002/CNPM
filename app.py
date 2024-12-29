@@ -575,7 +575,6 @@ def show_summary_table():
     mon = data.get('mon')
     hoc_ky = data.get('hoc_ky')
     nam_hoc = data.get('nam_hoc')
-    print("mon-hocky-namhoc: ", mon, hoc_ky, nam_hoc)
     # Kết nối đến cơ sở dữ liệu
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -586,7 +585,6 @@ def show_summary_table():
         for result in cursor.stored_results():
             results.extend(result.fetchall())
 
-        print('results summary_table: ', results)
         return jsonify(results), 200
 
     except Exception as e:
@@ -596,6 +594,8 @@ def show_summary_table():
     finally:
         cursor.close()
         connection.close()
+
+        
 ## Thêm môn học mới
 @app.route('/subjects', methods=['POST'])
 def add_subject():
