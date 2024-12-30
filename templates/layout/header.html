@@ -1,26 +1,106 @@
+<!-- Navbar -->
 <nav class="navbar navbar-expand-sm bg-light navbar-light">
   <div class="container-fluid">
     <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link active" href="/">Add Student</a></li>
+      <li class="nav-item"><a class="nav-link" href="/class">Class</a></li>
+      <li class="nav-item"><a class="nav-link" href="/point">Point</a></li>
+      <li class="nav-item"><a class="nav-link" href="/statistics">Statistics</a></li>
+    </ul>
+    <ul class="navbar-nav ms-auto">
       <li class="nav-item">
-        <a class="nav-link active" href="/">Add Student</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/class">Class</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/point">Point</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/statistics">Statistics</a>
+        <button type="button" id="loginButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
       </li>
     </ul>
-      
   </div>
 </nav>
 
+<!-- Modal for Login -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="loginModalLabel">Login</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm">
+          <div class="mb-3">
+            <label for="loginName" class="form-label">Login Name</label>
+            <input type="text" class="form-control" id="loginName" placeholder="Enter login name">
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter password">
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+          <p id="greetingMessage"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hiển thị thông báo chào mừng khi đăng nhập thành công -->
+<div id="welcomeMessage" style="display: none;">
+  <p id="greetingMessage"></p>
+  <button id="logoutButton" style="display: none;" class="btn btn-danger">Logout</button>
+</div>
 
 
-
-<!-- Bootstrap CSS and JS (make sure you include these in your project) -->
+<!-- Bootstrap CSS and JS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Sự kiện khi người dùng submit form đăng nhập
+  document.getElementById("loginForm").addEventListener("submit", function(event) {
+    event.preventDefault();  // Ngừng hành động mặc định của form
+
+    const loginName = document.getElementById("loginName").value;
+    const password = document.getElementById("password").value;
+
+    // Gửi yêu cầu POST tới Flask để đăng nhập
+    fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        loginName: loginName,
+        password: password
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Kiểm tra thông báo từ server
+      if (data.message == "Đăng nhập thành công!") {
+        // Hiển thị thông báo thành công
+        const greetingMessage = `Đăng nhập thành công! Chào bạn, ${data.role} ${data.loginName}`;
+        document.getElementById('greetingMessage').innerText = greetingMessage;
+        document.getElementById('welcomeMessage').style.display = 'block';
+
+        // Ẩn nút đăng nhập và hiển thị nút đăng xuất
+        document.getElementById('loginButton').style.display = 'none';  // Ẩn nút Login
+        document.getElementById('logoutButton').style.display = 'block';  // Hiển thị nút Logout
+
+        // Đóng modal khi đăng nhập thành công
+        //$('#loginModal').modal('hide');  // Đóng modal
+      } else {
+        alert(data.message);  // Thông báo lỗi đăng nhập
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  });
+
+  // Đăng xuất khi người dùng nhấn vào nút Logout
+  document.getElementById('logoutButton').addEventListener('click', function() {
+    // Ẩn thông báo chào mừng và hiển thị lại nút đăng nhập
+    document.getElementById('welcomeMessage').style.display = 'none';  // Ẩn thông báo
+    document.getElementById('loginButton').style.display = 'block';  // Hiển thị lại nút Login
+    document.getElementById('logoutButton').style.display = 'none';  // Ẩn nút Logout
+
+    // Sau khi đăng xuất, bạn có thể thực hiện thêm các thao tác như gọi API để logout hoặc làm mới trang
+  });
+</script>
