@@ -575,13 +575,14 @@ def show_summary_table():
     mon = data.get('mon')
     hoc_ky = data.get('hoc_ky')
     nam_hoc = data.get('nam_hoc')
+    khoi_lop = data.get('khoi_lop')
     # Kết nối đến cơ sở dữ liệu
     connection = get_db_connection()
     cursor = connection.cursor()
 
     results = []
     try:
-        cursor.callproc('CalculatePassingStudents', [mon, hoc_ky, nam_hoc])
+        cursor.callproc('CalculatePassingStudents', [mon, hoc_ky, nam_hoc, khoi_lop])
         for result in cursor.stored_results():
             results.extend(result.fetchall())
 

@@ -482,6 +482,7 @@ $(document).ready(function () {
         const mon = $("#mon").val();
         const hocKy = $("#hocKy").val();
         const namHoc = $("#namHoc").val();
+        const khoiLop = $("#khoiLop").val();
 
         // Gửi dữ liệu qua AJAX đến Flask
         $.ajax({
@@ -491,7 +492,8 @@ $(document).ready(function () {
             data: JSON.stringify({
                 mon: mon,
                 hoc_ky: hocKy,
-                nam_hoc: namHoc
+                nam_hoc: namHoc,
+                khoi_lop: khoiLop
             }),
             success: function (response) {
                 
